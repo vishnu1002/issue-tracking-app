@@ -1,0 +1,41 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Net.Mail;
+
+namespace IssueTrackingAPI.Model;
+
+public class TicketModel
+{
+    public int Id { get; set; }
+
+    [Required, MaxLength(200)]
+    public string Title { get; set; }
+
+    [Required]
+    public string Description { get; set; }
+
+    [Required]
+    public string Priority { get; set; } // "Low", "Medium", "High"
+
+    [Required]
+    public string Type { get; set; } // "Software", "Hardware"
+
+    [Required]
+    public string Status { get; set; } = "Open"; // default "Open"
+
+    [ForeignKey("CreatedByUser")]
+    public int CreatedByUserId { get; set; }
+    public UserModel CreatedByUser { get; set; }
+
+    [ForeignKey("AssignedToUser")]
+    public int? AssignedToUserId { get; set; } // nullable
+    public UserModel AssignedToUser { get; set; }
+
+    public string Comment { get; set; } // Comment
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Ticket Created Date Time
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow; // Ticket Updated Date Time
+
+    // Navigation properties
+    public ICollection<AttachmentModel> Attachments { get; set; }
+}

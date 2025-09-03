@@ -1,0 +1,69 @@
+############################
+# .NET / Visual Studio
+############################
+bin/
+obj/
+out/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.cache
+TestResults/
+
+# Logs
+*.log
+
+# Build / publish output
+.publish/
+publish/
+dist/
+*.Publish.xml
+out/
+
+############################
+# Config / Secrets
+############################
+.env
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+############################
+# EF Core (optional)
+############################
+# Uncomment if you regenerate migrations each time
+# Migrations/
+
+############################
+# Packages / Dependencies
+############################
+*.nupkg
+*.snupkg
+packages/
+node_modules/
+wwwroot/lib/
+
+############################
+# JetBrains Rider / Resharper
+############################
+.idea/
+*.sln.iml
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+############################
+# Docker
+############################
+docker-compose.override.yml
+*.tgz
+
+############################
+# Backup / Temp
+############################
+*.bak
+*.tmp
+*.temp
+~$*
