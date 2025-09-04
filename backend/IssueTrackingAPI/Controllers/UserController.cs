@@ -1,8 +1,9 @@
-﻿using IssueTrackingAPI.DTO.UserDTO;
+﻿using BCrypt.Net;
+using IssueTrackingAPI.DTO.UserDTO;
 using IssueTrackingAPI.Model;
 using IssueTrackingAPI.Repository.UserRepo.UserRepo;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using BCrypt.Net;
 
 namespace IssueTrackingAPI.Controllers;
 
@@ -21,6 +22,7 @@ public class UserController : ControllerBase
     // Get All Users
     // GET: api/users
     //
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserRead_DTO>>> GetAllUsers()
     {
@@ -41,6 +43,7 @@ public class UserController : ControllerBase
     // Get User By Id
     // GET: api/users/{id}
     //
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<UserRead_DTO>> GetUserById(int id)
     {
@@ -63,6 +66,7 @@ public class UserController : ControllerBase
     // Add User
     // POST: api/users
     //
+    [AllowAnonymous]
     [HttpPost]
     public async Task<ActionResult<UserRead_DTO>> CreateUser([FromBody] UserCreate_DTO dto)
     {
@@ -95,6 +99,7 @@ public class UserController : ControllerBase
     // Update User
     // PUT: api/users/{id}
     //
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult<UserRead_DTO>> UpdateUser(int id, [FromBody] UserUpdate_DTO dto)
     {
@@ -125,6 +130,7 @@ public class UserController : ControllerBase
     // Delete User
     // DELETE: api/users/{id}
     //
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser(int id)
     {

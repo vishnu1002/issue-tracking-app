@@ -1,12 +1,14 @@
 using IssueTrackingAPI.DTO.TicketDTO;
 using IssueTrackingAPI.Model;
 using IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IssueTrackingAPI.Controllers;
 
 [ApiController]
 [Route("api/ticket")]
+[Authorize]
 public class TicketController : ControllerBase
 {
     private readonly ITicketRepo _ticketRepo;
@@ -74,6 +76,7 @@ public class TicketController : ControllerBase
     // Create Ticket
     // POST: api/tickets
     // 
+    [Authorize(Roles = "User,Admin")]
     [HttpPost]
     public async Task<ActionResult<TicketRead_DTO>> CreateTicket([FromBody] TicketCreate_DTO dto)
     {
@@ -157,6 +160,7 @@ public class TicketController : ControllerBase
     // Delete Ticket
     // DELETE: api/tickets/{id}
     //
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTicket(int id)
     {

@@ -3,7 +3,10 @@ using IssueTrackingAPI.Middleware;
 using IssueTrackingAPI.Repository.AttachmentRepo.AttachmentRepo;
 using IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
 using IssueTrackingAPI.Repository.UserRepo.UserRepo;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +26,25 @@ builder.Services.AddScoped<IAttachmentRepo, AttachmentRepo>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidAudience = jwtSettings["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSettings["Key"]))
+        };
+    });
+
 // Service to: Health Check Middleware
 builder.Services.AddHealthChecks();
 
@@ -31,9 +53,6 @@ var app = builder.Build();
 
 // Middleware: Global Exception
 app.UseGlobalExceptionMiddleware();
-
-// Middleware: Health Check 
-app.MapHealthChecks("/health");
 
 
 // Return JSON for common status codes (404, 401, 403, etc.)
@@ -66,8 +85,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHealthChecks("/health"); // Heath Check
 
 app.Run();

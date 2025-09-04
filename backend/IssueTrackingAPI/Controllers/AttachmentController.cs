@@ -1,12 +1,14 @@
 using IssueTrackingAPI.DTO.AttachmentDTO;
 using IssueTrackingAPI.Model;
 using IssueTrackingAPI.Repository.AttachmentRepo.AttachmentRepo;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IssueTrackingAPI.Controllers;
 
 [ApiController]
 [Route("api/attachment")]
+[Authorize] // Requires authorize for all calls
 public class AttachmentController : ControllerBase
 {
     private readonly IAttachmentRepo _attachmentRepo;
@@ -20,6 +22,7 @@ public class AttachmentController : ControllerBase
     // Get All Attachments
     // GET: api/attachments/
     //
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AttachmentRead_DTO>>> GetAll()
     {
@@ -39,6 +42,7 @@ public class AttachmentController : ControllerBase
     // Get by Id
     // GET: api/attachments/{id}
     //
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<AttachmentRead_DTO>> GetById(int id)
     {
@@ -87,6 +91,7 @@ public class AttachmentController : ControllerBase
     // Delete Attachment
     // DELETE: api/attachment/{id}
     //
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
