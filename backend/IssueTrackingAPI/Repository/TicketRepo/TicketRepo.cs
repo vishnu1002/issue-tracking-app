@@ -65,4 +65,18 @@ public class TicketRepo : ITicketRepo
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public async Task<IEnumerable<TicketModel>> GetTicketsByCreator(int userId)
+    {
+        return await _context.Tickets_Table
+            .Where(t => t.CreatedByUserId == userId)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<TicketModel>> GetTicketsByAssignee(int userId)
+    {
+        return await _context.Tickets_Table
+            .Where(t => t.AssignedToUserId == userId)
+            .ToListAsync();
+    }
 }

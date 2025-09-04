@@ -9,5 +9,9 @@ public interface ITicketRepo
     Task<TicketModel> AddTicket(TicketModel ticket);
     Task<TicketModel?> UpdateTicket(TicketModel ticket);
     Task<bool> DeleteTicket(int id);
+
+    Task<IEnumerable<TicketModel>> GetTicketsByCreator(int userId);
+    Task<IEnumerable<TicketModel>> GetTicketsByAssignee(int userId);
+
 }
 
