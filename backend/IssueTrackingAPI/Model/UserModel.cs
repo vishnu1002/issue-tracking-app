@@ -8,20 +8,20 @@ public class UserModel
     public int Id { get; set; }
 
     [Required, MaxLength(100)]
-    public string Name { get; set; }
+    public required string Name { get; set; }
 
     [Required, EmailAddress, MaxLength(150)]
-    public string Email { get; set; }
+    public required string Email { get; set; }
 
     [Required]
-    public string PasswordHash { get; set; } // hashed password only
+    public required string PasswordHash { get; set; } // hashed password only
 
     [Required]
-    public string Role { get; set; } // ["User", "Representative", "Admin"]
+    public required string Role { get; set; } // ["User", "Representative", "Admin"]
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties
-    public ICollection<TicketModel> CreatedTickets { get; set; }
-    public ICollection<TicketModel> AssignedTickets { get; set; }
+    public ICollection<TicketModel> CreatedTickets { get; set; } = new List<TicketModel>();
+    public ICollection<TicketModel> AssignedTickets { get; set; } = new List<TicketModel>();
 }
