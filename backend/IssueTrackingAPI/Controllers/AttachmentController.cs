@@ -1,25 +1,28 @@
-using IssueTrackingAPI.DTO.AttachmentDTO;
+﻿using IssueTrackingAPI.DTO.AttachmentDTO;
 using IssueTrackingAPI.Model;
 using IssueTrackingAPI.Repository.AttachmentRepo.AttachmentRepo;
+using IssueTrackingAPI.Repository.TicketRepo.TicketRepo; // ✅ Import Ticket Repo
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace IssueTrackingAPI.Controllers;
 
 [ApiController]
 [Route("api/attachment")]
+[Authorize] // Requires authorize for all calls
 public class AttachmentController : ControllerBase
 {
     private readonly IAttachmentRepo _attachmentRepo;
+    private readonly ITicketRepo _ticketRepo;
 
-    public AttachmentController(IAttachmentRepo attachmentRepo)
+    public AttachmentController(IAttachmentRepo attachmentRepo, ITicketRepo ticketRepo)
     {
         _attachmentRepo = attachmentRepo;
+        _ticketRepo = ticketRepo;
     }
 
-    //
-    // Get All Attachments
-    // GET: api/attachments/
-    //
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AttachmentRead_DTO>>> GetAll()
     {
@@ -35,10 +38,7 @@ public class AttachmentController : ControllerBase
         return Ok(dtoList);
     }
 
-    //
-    // Get by Id
-    // GET: api/attachments/{id}
-    //
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<AttachmentRead_DTO>> GetById(int id)
     {
@@ -55,10 +55,6 @@ public class AttachmentController : ControllerBase
         });
     }
 
-    //
-    // Create Attachment
-    // POST: api/attachment/
-    //
     [HttpPost]
     public async Task<ActionResult<AttachmentRead_DTO>> Create([FromBody] AttachmentCreate_DTO dto)
     {
@@ -83,13 +79,22 @@ public class AttachmentController : ControllerBase
         });
     }
 
-    // 
-    // Delete Attachment
-    // DELETE: api/attachment/{id}
-    //
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
+        var currentUserId = int.Parse(User.FindFirst("id").Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        var attachment = await _attachmentRepo.GetAttachmentById(id);
+        if (attachment == null) return NotFound(new { message = "Attachment not found" });
+
+        if (currentRole != "Admin")
+        {
+            var ticket = await _ticketRepo.GetTicketById(attachment.TicketId);
+            if (ticket == null || ticket.CreatedByUserId != currentUserId)
+                return Forbid();
+        }
+
         var deleted = await _attachmentRepo.DeleteAttachment(id);
         if (!deleted) return NotFound(new { message = "Attachment not found" });
 

@@ -1,12 +1,16 @@
 using IssueTrackingAPI.DTO.TicketDTO;
 using IssueTrackingAPI.Model;
 using IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
+using System.Security.Claims;
 
 namespace IssueTrackingAPI.Controllers;
 
 [ApiController]
 [Route("api/ticket")]
+[Authorize]
 public class TicketController : ControllerBase
 {
     private readonly ITicketRepo _ticketRepo;
@@ -23,7 +27,26 @@ public class TicketController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TicketRead_DTO>>> GetAllTickets()
     {
-        var tickets = await _ticketRepo.GetAllTickets();
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        IEnumerable<TicketModel> tickets;
+
+        switch (currentRole)
+        {
+            case Roles.Admin:
+                tickets = await _ticketRepo.GetAllTickets();
+                break;
+            case Roles.User:
+                tickets = await _ticketRepo.GetTicketsByCreator(currentUserId); // only tickets created by user
+                break;
+            case Roles.Rep:
+                tickets = await _ticketRepo.GetTicketsByAssignee(currentUserId); // only tickets assigned to rep
+                break;
+            default:
+                return Forbid();
+        }
+
         var ticketDtos = tickets.Select(t => new TicketRead_DTO
         {
             Id = t.Id,
@@ -74,6 +97,7 @@ public class TicketController : ControllerBase
     // Create Ticket
     // POST: api/tickets
     // 
+    [Authorize(Roles = "User,Admin")]
     [HttpPost]
     public async Task<ActionResult<TicketRead_DTO>> CreateTicket([FromBody] TicketCreate_DTO dto)
     {
@@ -120,10 +144,19 @@ public class TicketController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<TicketRead_DTO>> UpdateTicket(int id, [FromBody] TicketUpdate_DTO dto)
     {
+        var currentUserId = int.Parse(User.FindFirst("id").Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
         if (id != dto.Id) return BadRequest(new { message = "Ticket ID mismatch" });
 
         var existing = await _ticketRepo.GetTicketById(id);
         if (existing == null) return NotFound(new { message = "Ticket not found" });
+
+        // Role restrictions
+        if (currentRole == "User" && existing.CreatedByUserId != currentUserId)
+            return Forbid();
+        if (currentRole == "Rep" && existing.AssignedToUserId != currentUserId)
+            return Forbid();
 
         existing.Title = dto.Title;
         existing.Description = dto.Description;
@@ -135,7 +168,7 @@ public class TicketController : ControllerBase
 
         var updatedTicket = await _ticketRepo.UpdateTicket(existing);
 
-        var ticketDto = new TicketRead_DTO
+        return Ok(new TicketRead_DTO
         {
             Id = updatedTicket.Id,
             Title = updatedTicket.Title,
@@ -148,15 +181,14 @@ public class TicketController : ControllerBase
             Comment = updatedTicket.Comment,
             CreatedAt = updatedTicket.CreatedAt,
             UpdatedAt = updatedTicket.UpdatedAt
-        };
-
-        return Ok(ticketDto);
+        });
     }
 
     //
     // Delete Ticket
     // DELETE: api/tickets/{id}
     //
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTicket(int id)
     {
