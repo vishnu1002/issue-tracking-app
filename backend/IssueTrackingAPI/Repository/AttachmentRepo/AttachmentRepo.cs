@@ -1,4 +1,4 @@
-﻿using IssueTrackingAPI.Context;
+using IssueTrackingAPI.Context;
 using IssueTrackingAPI.Model;
 using Microsoft.EntityFrameworkCore;
 

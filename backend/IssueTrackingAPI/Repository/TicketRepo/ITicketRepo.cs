@@ -1,4 +1,4 @@
-﻿using IssueTrackingAPI.Model;
+using IssueTrackingAPI.Model;
 
 namespace IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
 
@@ -10,3 +10,4 @@ public interface ITicketRepo
     Task<TicketModel?> UpdateTicket(TicketModel ticket);
     Task<bool> DeleteTicket(int id);
 }
+

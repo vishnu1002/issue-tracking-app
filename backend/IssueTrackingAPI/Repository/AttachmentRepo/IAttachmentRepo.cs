@@ -1,4 +1,4 @@
-﻿using IssueTrackingAPI.Model;
+using IssueTrackingAPI.Model;
 
 namespace IssueTrackingAPI.Repository.AttachmentRepo.AttachmentRepo;
 

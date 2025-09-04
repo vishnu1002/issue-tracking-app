@@ -15,6 +15,7 @@ builder.Services.AddDbContext<AppDBContext>(options =>
 // Add services to the container.
 builder.Services.AddControllers();
 
+
 // Repository Interface -> Repository Classes
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<ITicketRepo, TicketRepo>();

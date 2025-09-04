@@ -1,4 +1,4 @@
-﻿using IssueTrackingAPI.DTO.TicketDTO;
+using IssueTrackingAPI.DTO.TicketDTO;
 using IssueTrackingAPI.Model;
 using IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
 using Microsoft.AspNetCore.Mvc;

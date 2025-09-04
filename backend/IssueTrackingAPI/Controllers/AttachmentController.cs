@@ -1,4 +1,4 @@
-﻿using IssueTrackingAPI.DTO.AttachmentDTO;
+using IssueTrackingAPI.DTO.AttachmentDTO;
 using IssueTrackingAPI.Model;
 using IssueTrackingAPI.Repository.AttachmentRepo.AttachmentRepo;
 using Microsoft.AspNetCore.Mvc;
