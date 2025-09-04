@@ -151,7 +151,7 @@ public class UserController : ControllerBase
         var deleted = await _userRepo.DeleteUser(id);
         if (!deleted) return NotFound(new { message = "User not found" });
 
-        return NoContent();
+        return Ok("User Deleted");
     }
 }
 

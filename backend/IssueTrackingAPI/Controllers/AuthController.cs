@@ -1,7 +1,6 @@
 ﻿using IssueTrackingAPI.Model;
 using IssueTrackingAPI.Repository.UserRepo.UserRepo;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
@@ -55,7 +54,8 @@ public class AuthController : ControllerBase
     private string GenerateJwtToken(UserModel user)
     {
         var jwtSettings = _config.GetSection("Jwt");
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? throw new InvalidOperationException("JWT key missing")));
+
 
         var claims = new[]
         {
@@ -67,13 +67,15 @@ public class AuthController : ControllerBase
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+        var expireMinutes = double.Parse(jwtSettings["ExpireMinutes"] ?? "60"); // default 60 minutes
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["ExpireMinutes"])),
+            expires: DateTime.UtcNow.AddMinutes(expireMinutes),
             signingCredentials: creds
         );
+
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
