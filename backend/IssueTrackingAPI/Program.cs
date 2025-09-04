@@ -1,6 +1,10 @@
 using IssueTrackingAPI.Context;
+using IssueTrackingAPI.Middleware;
+using IssueTrackingAPI.Repository.AttachmentRepo.AttachmentRepo;
+using IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
 using IssueTrackingAPI.Repository.UserRepo.UserRepo;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,15 +15,45 @@ builder.Services.AddDbContext<AppDBContext>(options =>
 // Add services to the container.
 builder.Services.AddControllers();
 
-// Repository Classes
+
+// Repository Interface -> Repository Classes
 builder.Services.AddScoped<IUserRepo, UserRepo>();
+builder.Services.AddScoped<ITicketRepo, TicketRepo>();
+builder.Services.AddScoped<IAttachmentRepo, AttachmentRepo>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// 
+// Middleware Pipeline
+// 
+
+app.UseGlobalExceptionMiddleware();
+
+// Always return JSON for common status codes (404, 401, 403, etc.)
+app.UseStatusCodePages(async context =>
+{
+    var response = context.HttpContext.Response;
+    response.ContentType = "application/json";
+
+    var statusCode = response.StatusCode;
+    var message = statusCode switch
+    {
+        404 => "Resource not found",
+        401 => "Unauthorized access",
+        403 => "Forbidden",
+        _ => "An unexpected error occurred"
+    };
+
+    await response.WriteAsync(JsonSerializer.Serialize(new
+    {
+        status = statusCode,
+        message
+    }));
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

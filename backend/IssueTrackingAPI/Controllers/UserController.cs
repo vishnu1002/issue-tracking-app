@@ -7,7 +7,7 @@ using BCrypt.Net;
 namespace IssueTrackingAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/user")]
 public class UserController : ControllerBase
 {
     private readonly IUserRepo _userRepo;

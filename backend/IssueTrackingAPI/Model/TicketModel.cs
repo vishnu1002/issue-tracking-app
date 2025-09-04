@@ -9,19 +9,19 @@ public class TicketModel
     public int Id { get; set; }
 
     [Required, MaxLength(200)]
-    public string Title { get; set; }
+    public required string Title { get; set; }
 
     [Required]
-    public string Description { get; set; }
+    public required string Description { get; set; }
 
     [Required]
-    public string Priority { get; set; } // "Low", "Medium", "High"
+    public required string Priority { get; set; } // "Low", "Medium", "High"
 
     [Required]
-    public string Type { get; set; } // "Software", "Hardware"
+    public required string Type { get; set; } // "Software", "Hardware"
 
     [Required]
-    public string Status { get; set; } = "Open"; // default "Open"
+    public required string Status { get; set; } = "Open"; // default "Open"
 
     [ForeignKey("CreatedByUser")]
     public int CreatedByUserId { get; set; }
