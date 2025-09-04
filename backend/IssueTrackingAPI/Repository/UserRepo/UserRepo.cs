@@ -1,6 +1,7 @@
 ﻿using IssueTrackingAPI.Context;
 using IssueTrackingAPI.Model;
 using Microsoft.EntityFrameworkCore;
+
 namespace IssueTrackingAPI.Repository.UserRepo.UserRepo;
 
 public class UserRepo : IUserRepo
