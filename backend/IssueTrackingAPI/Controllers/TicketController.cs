@@ -144,7 +144,7 @@ public class TicketController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<TicketRead_DTO>> UpdateTicket(int id, [FromBody] TicketUpdate_DTO dto)
     {
-        var currentUserId = int.Parse(User.FindFirst("id").Value);
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
         var currentRole = User.FindFirst(ClaimTypes.Role).Value;
 
         if (id != dto.Id) return BadRequest(new { message = "Ticket ID mismatch" });

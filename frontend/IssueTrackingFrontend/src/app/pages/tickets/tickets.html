@@ -1,1 +1,75 @@
-<p>tickets works!</p>
+<div>
+  <!-- User: Create Ticket Form -->
+  <div *ngIf="role === 'User'" class="mb-6 bg-gray-800 p-4 rounded-xl shadow">
+    <h2 class="text-lg font-semibold mb-3">Create New Ticket</h2>
+    <form (ngSubmit)="createTicket()" class="grid gap-3">
+      <input
+        type="text"
+        [(ngModel)]="newTicket.title"
+        name="title"
+        placeholder="Title"
+        class="p-2 rounded bg-gray-700 text-white"
+        required
+      />
+      <textarea
+        [(ngModel)]="newTicket.description"
+        name="description"
+        placeholder="Description"
+        class="p-2 rounded bg-gray-700 text-white"
+        required
+      ></textarea>
+
+      <div class="flex gap-4">
+        <select
+          [(ngModel)]="newTicket.priority"
+          name="priority"
+          class="p-2 rounded bg-gray-700 text-white"
+        >
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+        </select>
+
+        <select [(ngModel)]="newTicket.type" name="type" class="p-2 rounded bg-gray-700 text-white">
+          <option>Software</option>
+          <option>Hardware</option>
+        </select>
+      </div>
+
+      <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg">
+        Create Ticket
+      </button>
+    </form>
+  </div>
+
+  <!-- Tickets List -->
+  <div class="space-y-4">
+    <div *ngFor="let ticket of tickets" class="bg-gray-800 p-4 rounded-xl shadow">
+      <div class="flex justify-between">
+        <h3 class="font-semibold">{{ ticket.title }}</h3>
+        <span class="text-sm text-gray-400">{{ ticket.status }}</span>
+      </div>
+      <p class="text-gray-300 text-sm">{{ ticket.description }}</p>
+
+      <div class="mt-2 text-xs text-gray-400">
+        Priority: {{ ticket.priority }} | Type: {{ ticket.type }}
+      </div>
+
+      <!-- Rep: update status -->
+      <div *ngIf="role === 'Representative'" class="mt-3 flex gap-2">
+        <button
+          (click)="updateStatus(ticket, 'IN_PROGRESS')"
+          class="bg-yellow-500 px-3 py-1 rounded"
+        >
+          In Progress
+        </button>
+        <button (click)="updateStatus(ticket, 'RESOLVED')" class="bg-green-600 px-3 py-1 rounded">
+          Resolve
+        </button>
+        <button (click)="updateStatus(ticket, 'CLOSED')" class="bg-red-600 px-3 py-1 rounded">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

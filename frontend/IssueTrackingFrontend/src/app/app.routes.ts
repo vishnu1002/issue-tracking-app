@@ -13,27 +13,27 @@ import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
-  { path: '', component: Landing },
+  { path: '', component: Landing, pathMatch: 'full' },
+
   { path: 'login', component: Login },
-  { path: 'register', component: Register },
+
   {
-    path: 'tickets',
-    component: Tickets,
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['User', 'Representative', 'Admin'] },
+    path: 'dashboard',
+    canActivate: [authGuard],
+    children: [
+      { path: '', redirectTo: 'tickets', pathMatch: 'full' },
+
+      { path: 'tickets', component: Tickets },
+      { path: 'history', component: History },
+
+      {
+        path: 'users',
+        component: Users,
+        canActivate: [roleGuard],
+        data: { roles: ['Admin'] },
+      },
+    ],
   },
-  {
-    path: 'history',
-    component: History,
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['User', 'Representative'] },
-  },
-  {
-    path: 'users',
-    component: Users,
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['Admin'] },
-  },
-  { path: 'profile', component: Profile },
-  { path: '**', redirectTo: 'dashboard' },
+
+  { path: '**', redirectTo: 'login' },
 ];

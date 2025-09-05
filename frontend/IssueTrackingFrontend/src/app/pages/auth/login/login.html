@@ -1,1 +1,46 @@
-<p>login works!</p>
+<form (ngSubmit)="submit()" class="space-y-4">
+  <!-- Email -->
+  <div>
+    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      Email
+    </label>
+    <input
+      id="email"
+      type="email"
+      [(ngModel)]="credentials.email"
+      name="email"
+      required
+      class="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2"
+    />
+  </div>
+
+  <!-- Password -->
+  <div>
+    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      Password
+    </label>
+    <input
+      id="password"
+      type="password"
+      [(ngModel)]="credentials.password"
+      name="password"
+      required
+      class="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2"
+    />
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="text-red-500 text-sm">
+    {{ error }}
+  </div>
+
+  <!-- Submit -->
+  <button
+    type="submit"
+    [disabled]="loading"
+    class="w-full py-2 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+  >
+    <span *ngIf="!loading">Login</span>
+    <span *ngIf="loading">Logging in...</span>
+  </button>
+</form>

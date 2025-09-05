@@ -22,6 +22,10 @@ public class AttachmentController : ControllerBase
         _ticketRepo = ticketRepo;
     }
 
+    // 
+    // Get All Tickets
+    // GET: /api/attachment
+    //
     [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AttachmentRead_DTO>>> GetAll()
@@ -38,6 +42,10 @@ public class AttachmentController : ControllerBase
         return Ok(dtoList);
     }
 
+    //
+    // Get Attachment By Id
+    // GET: /api/attachment/api
+    //
     [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<AttachmentRead_DTO>> GetById(int id)
@@ -55,6 +63,10 @@ public class AttachmentController : ControllerBase
         });
     }
 
+    //
+    // Create Ticket
+    // PUT: /api/attachment/{id}
+    //
     [HttpPost]
     public async Task<ActionResult<AttachmentRead_DTO>> Create([FromBody] AttachmentCreate_DTO dto)
     {
@@ -79,10 +91,14 @@ public class AttachmentController : ControllerBase
         });
     }
 
+    //
+    // Delete Ticket
+    // DELETE: /api/attachment/{id}
+    //
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var currentUserId = int.Parse(User.FindFirst("id").Value);
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
         var currentRole = User.FindFirst(ClaimTypes.Role).Value;
 
         var attachment = await _attachmentRepo.GetAttachmentById(id);

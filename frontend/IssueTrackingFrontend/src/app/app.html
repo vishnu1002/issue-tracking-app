@@ -1,5 +1,6 @@
 <div class="dark min-h-screen bg-gray-900 text-gray-100">
-  <app-navbar></app-navbar>
+  <app-navbar *ngIf="auth.isLoggedIn()"></app-navbar>
+
   <main class="max-w-7xl mx-auto p-4">
     <router-outlet></router-outlet>
   </main>

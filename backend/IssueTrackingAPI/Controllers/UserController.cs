@@ -112,7 +112,7 @@ public class UserController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<UserRead_DTO>> UpdateUser(int id, [FromBody] UserUpdate_DTO dto)
     {
-        var currentUserId = int.Parse(User.FindFirst("id").Value);
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
         var currentRole = User.FindFirst(ClaimTypes.Role).Value;
 
         // User can only update themselves

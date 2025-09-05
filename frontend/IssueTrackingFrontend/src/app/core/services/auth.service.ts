@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { UserModel, Role } from '../../models/user.model';
+import { env } from '../../../env/env';
 
 interface JwtPayload {
   sub: string;
@@ -19,6 +20,8 @@ export class AuthService {
   private readonly _user$ = new BehaviorSubject<UserModel | null>(null);
   readonly user$ = this._user$.asObservable();
 
+  private readonly baseUrl = env.apiUrl + '/auth';
+
   constructor(private http: HttpClient) {
     const token = this.getToken();
     if (token) this.hydrateFromToken(token);
@@ -26,12 +29,12 @@ export class AuthService {
 
   login(credentials: { email: string; password: string }) {
     return this.http
-      .post<{ token: string }>('/api/auth/login', credentials)
+      .post<{ token: string }>(`${this.baseUrl}/login`, credentials)
       .pipe(tap(({ token }) => this.setToken(token)));
   }
 
   register(data: { name: string; email: string; password: string }) {
-    return this.http.post('/api/auth/register', data);
+    return this.http.post(`${this.baseUrl}/register`, data);
   }
 
   setToken(token: string) {

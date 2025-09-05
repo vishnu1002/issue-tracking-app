@@ -18,6 +18,19 @@ builder.Services.AddDbContext<AppDBContext>(options =>
 // Service to: Controllers
 builder.Services.AddControllers();
 
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:4200") // Angular dev server
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+});
+
 // Service to: Repository Interface -> Repository Classes
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<ITicketRepo, TicketRepo>();
@@ -84,6 +97,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
