@@ -1,0 +1,184 @@
+UserCreate_DTO
+using System.ComponentModel.DataAnnotations;
+
+namespace IssueTrackingAPI.DTO.UserDTO;
+
+public class UserCreate_DTO
+{
+    [Required, MaxLength(100)]
+    public string Name { get; set; }
+
+    [Required, EmailAddress, MaxLength(150)]
+    public string Email { get; set; }
+
+    [Required]
+    public string Password { get; set; } // plain password, will be hashed inside repo/service
+
+    [Required]
+    public string Role { get; set; } // "User", "Representative", "Admin"
+}
+
+
+UserRead_DTO
+namespace IssueTrackingAPI.DTO.UserDTO;
+
+public class UserRead_DTO
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string Role { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+
+UserUpdate_DTO
+using System.ComponentModel.DataAnnotations;
+
+namespace IssueTrackingAPI.DTO.UserDTO;
+
+public class UserUpdate_DTO
+{
+    [Required]
+    public int Id { get; set; }
+
+    [Required, MaxLength(100)]
+    public string Name { get; set; }
+
+    [Required, EmailAddress, MaxLength(150)]
+    public string Email { get; set; }
+
+    [Required]
+    public string Role { get; set; } // allow updating role, but **not** password here
+}
+
+
+TicketCreate_DTO
+using System.ComponentModel.DataAnnotations;
+
+namespace IssueTrackingAPI.DTO.TicketDTO;
+
+public class TicketCreate_DTO
+{
+    [Required, MaxLength(200)]
+    public string Title { get; set; }
+
+    [Required]
+    public string Description { get; set; }
+
+    [Required]
+    public string Priority { get; set; } // "Low", "Medium", "High"
+
+    [Required]
+    public string Type { get; set; } // "Software", "Hardware"
+
+    public int CreatedByUserId { get; set; }
+    public int? AssignedToUserId { get; set; }
+    public string? Comment { get; set; }
+}
+
+
+TicketRead_DTO
+namespace IssueTrackingAPI.DTO.TicketDTO;
+
+public class TicketRead_DTO
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public string Description { get; set; }
+    public string Priority { get; set; }
+    public string Type { get; set; }
+    public string Status { get; set; }
+    public int CreatedByUserId { get; set; }
+    public int? AssignedToUserId { get; set; }
+    public string? Comment { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+
+
+TicketUpdate_DTO
+using System.ComponentModel.DataAnnotations;
+
+namespace IssueTrackingAPI.DTO.TicketDTO;
+
+public class TicketUpdate_DTO
+{
+    [Required]
+    public int Id { get; set; }
+
+    [Required, MaxLength(200)]
+    public string Title { get; set; }
+
+    [Required]
+    public string Description { get; set; }
+
+    [Required]
+    public string Priority { get; set; }
+
+    [Required]
+    public string Type { get; set; }
+
+    [Required]
+    public string Status { get; set; }
+
+    public int? AssignedToUserId { get; set; }
+    public string? Comment { get; set; }
+}
+
+
+UserCreate_DTO
+using System.ComponentModel.DataAnnotations;
+
+namespace IssueTrackingAPI.DTO.UserDTO;
+
+public class UserCreate_DTO
+{
+    [Required, MaxLength(100)]
+    public string Name { get; set; }
+
+    [Required, EmailAddress, MaxLength(150)]
+    public string Email { get; set; }
+
+    [Required]
+    public string Password { get; set; } // plain password, will be hashed inside repo/service
+
+    [Required]
+    public string Role { get; set; } // "User", "Representative", "Admin"
+}
+
+
+UserRead_DTO
+namespace IssueTrackingAPI.DTO.UserDTO;
+
+public class UserRead_DTO
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string Role { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+
+UserUpdate_DTO
+using System.ComponentModel.DataAnnotations;
+
+namespace IssueTrackingAPI.DTO.UserDTO;
+
+public class UserUpdate_DTO
+{
+    [Required]
+    public int Id { get; set; }
+
+    [Required, MaxLength(100)]
+    public string Name { get; set; }
+
+    [Required, EmailAddress, MaxLength(150)]
+    public string Email { get; set; }
+
+    [Required]
+    public string Role { get; set; } // allow updating role, but **not** password here
+}
+
+

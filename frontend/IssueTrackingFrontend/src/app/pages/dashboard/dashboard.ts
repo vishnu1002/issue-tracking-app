@@ -1,14 +1,19 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NavbarComponent } from '../../components/navbar-component/navbar-component';
 import { AuthService } from '../../core/services/auth.service';
+import { CommonModule } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterOutlet, NavbarComponent],
+  standalone: true,
+  imports: [CommonModule, RouterOutlet],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.css',
+  styleUrls: ['./dashboard.css'],
 })
 export class Dashboard {
-  protected auth = inject(AuthService);
+  auth = inject(AuthService);
+
+  // Wait for the hydrated user signal
+  user = toSignal(this.auth.user$, { initialValue: null });
 }

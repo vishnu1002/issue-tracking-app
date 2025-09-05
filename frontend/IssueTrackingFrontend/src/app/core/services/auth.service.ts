@@ -5,11 +5,21 @@ import { UserModel, Role } from '../../models/user.model';
 import { env } from '../../../env/env';
 
 interface JwtPayload {
-  sub: string;
-  email: string;
+  // Standard JWT claims
+  sub?: string;
   name?: string;
-  role: Role;
+  email?: string;
+  role?: Role;
   exp?: number;
+
+  // .NET ClaimTypes (using full URIs)
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'?: string;
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'?: string;
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'?: string;
+  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'?: string;
+
+  // Allow any other properties
+  [key: string]: any;
 }
 
 @Injectable({
@@ -28,9 +38,12 @@ export class AuthService {
   }
 
   login(credentials: { email: string; password: string }) {
-    return this.http
-      .post<{ token: string }>(`${this.baseUrl}/login`, credentials)
-      .pipe(tap(({ token }) => this.setToken(token)));
+    return this.http.post<{ token: string }>(`${this.baseUrl}/login`, credentials).pipe(
+      tap(({ token }) => {
+        console.log('Login successful, received token:', token);
+        this.setToken(token);
+      })
+    );
   }
 
   register(data: { name: string; email: string; password: string }) {
@@ -38,6 +51,7 @@ export class AuthService {
   }
 
   setToken(token: string) {
+    console.log('Setting token:', token);
     localStorage.setItem(this.tokenKey, token);
     this.hydrateFromToken(token);
   }
@@ -48,6 +62,8 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem(this.tokenKey);
+    // Clear all localStorage items related to auth
+    localStorage.clear();
     this._user$.next(null);
   }
 
@@ -70,13 +86,21 @@ export class AuthService {
 
   private hydrateFromToken(token: string) {
     const p = this.decodePayload(token);
-    if (!p) return;
+    if (!p) {
+      console.log('No payload found in token');
+      return;
+    }
+    console.log('Decoded payload:', p);
+
+    // Map .NET claim types to user properties
     const user: UserModel = {
-      id: p.sub,
-      name: p.name ?? '',
-      email: p.email,
-      role: p.role,
+      id: p['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || p.sub || '',
+      name: p['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || p.name || '',
+      email:
+        p['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || p.email || '',
+      role: (p['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || p.role) as Role,
     };
+    console.log('Created user object:', user);
     this._user$.next(user);
   }
 
@@ -84,8 +108,11 @@ export class AuthService {
     try {
       const payload = token.split('.')[1] ?? '';
       const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-      return JSON.parse(json) as JwtPayload;
-    } catch {
+      const decoded = JSON.parse(json);
+      console.log('JWT Payload:', decoded);
+      return decoded as JwtPayload;
+    } catch (error) {
+      console.error('JWT decode error:', error);
       return null;
     }
   }

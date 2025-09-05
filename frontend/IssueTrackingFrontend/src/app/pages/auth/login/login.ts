@@ -29,16 +29,12 @@ export class Login {
     this.auth.login(this.credentials).subscribe({
       next: (res) => {
         this.loading = false;
-
         // Get role from AuthService after login
         const role = this.auth.getRole();
-
-        // Redirect based on role
-        if (role === 'Admin') {
-          this.router.navigate(['/dashboard/users']);
-        } else {
-          this.router.navigate(['/dashboard/tickets']);
-        }
+        setTimeout(() => {
+          const target = this.redirectUrl ?? '/dashboard';
+          this.router.navigate([target]);
+        }, 0);
       },
       error: (err) => {
         this.loading = false;

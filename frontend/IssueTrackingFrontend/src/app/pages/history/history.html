@@ -1,1 +1,112 @@
-<p>history works!</p>
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-xl font-semibold text-gray-100">Ticket History</h2>
+    <button
+      class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+      (click)="loadHistory()"
+    >
+      Refresh
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-8">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+    <span class="ml-2 text-gray-400">Loading history...</span>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="bg-red-800/50 border border-red-600 text-red-200 px-4 py-3 rounded-md">
+    {{ error }}
+  </div>
+
+  <!-- History Table -->
+  <div *ngIf="!loading && !error" class="bg-gray-800 rounded-lg shadow overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-700">
+        <thead class="bg-gray-700">
+          <tr>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+            >
+              ID
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+            >
+              Title
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+            >
+              Priority
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+            >
+              Type
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+            >
+              Status
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+            >
+              Created At
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+            >
+              Updated At
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-gray-800 divide-y divide-gray-700">
+          <tr *ngFor="let ticket of tickets" class="hover:bg-gray-700">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+              {{ ticket.id }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+              {{ ticket.title }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span
+                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                [ngClass]="{
+                  'bg-green-100 text-green-800': ticket.priority === 'Low',
+                  'bg-yellow-100 text-yellow-800': ticket.priority === 'Medium',
+                  'bg-red-100 text-red-800': ticket.priority === 'High'
+                }"
+              >
+                {{ ticket.priority }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+              {{ ticket.type }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span
+                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800"
+              >
+                {{ ticket.status }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+              {{ ticket.createdAt | date : 'short' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+              {{ ticket.updatedAt | date : 'short' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="tickets.length === 0" class="text-center py-8">
+      <p class="text-gray-400">No closed tickets found</p>
+    </div>
+  </div>
+</div>

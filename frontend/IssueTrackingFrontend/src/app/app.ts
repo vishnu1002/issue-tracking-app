@@ -1,20 +1,18 @@
-import { Component, inject, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from './components/navbar-component/navbar-component';
 import { AuthService } from './core/services/auth.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, CommonModule],
+  imports: [RouterOutlet, CommonModule, NavbarComponent],
   templateUrl: './app.html',
-  styleUrl: './app.css',
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  styleUrls: ['./app.css'],
 })
 export class App {
-  protected readonly title = signal('IssueTrackingFrontend');
-
-  // inject AuthService
-  protected auth = inject(AuthService);
+  private auth = inject(AuthService);
+  user = toSignal(this.auth.user$, { initialValue: null });
 }

@@ -34,29 +34,31 @@ export class Tickets implements OnInit {
   loadTickets() {
     this.loading.set(true);
 
-    if (this.role === 'User') {
-      this.ticketService.getMyTickets().subscribe({
-        next: (res) => {
-          this.tickets = res;
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
-    } else if (this.role === 'Representative') {
-      this.ticketService.getAssignedTickets().subscribe({
-        next: (res) => {
-          this.tickets = res;
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
-    }
+    // The API automatically filters tickets based on user role
+    this.ticketService.getAllTickets().subscribe({
+      next: (res) => {
+        this.tickets = res;
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
   }
 
   createTicket() {
     if (this.role !== 'User') return;
 
-    this.ticketService.createTicket(this.newTicket).subscribe({
+    const currentUser = this.auth.getCurrentUser();
+    if (!currentUser) return;
+
+    const payload = {
+      title: this.newTicket.title || '',
+      description: this.newTicket.description || '',
+      priority: this.newTicket.priority || 'Low',
+      type: this.newTicket.type || 'Software',
+      createdByUserId: parseInt(currentUser.id),
+    };
+
+    this.ticketService.createTicket(payload).subscribe({
       next: (ticket) => {
         this.tickets.push(ticket);
         this.newTicket = {
@@ -72,7 +74,18 @@ export class Tickets implements OnInit {
   updateStatus(ticket: TicketModel, status: TicketModel['status']) {
     if (this.role !== 'Representative') return;
 
-    this.ticketService.updateTicket({ id: ticket.id, status }).subscribe({
+    const payload = {
+      id: ticket.id,
+      title: ticket.title,
+      description: ticket.description,
+      priority: ticket.priority,
+      type: ticket.type,
+      status: status,
+      assignedToUserId: ticket.assignedToUserId,
+      comment: ticket.comment,
+    };
+
+    this.ticketService.updateTicket(ticket.id, payload).subscribe({
       next: (updated) => {
         ticket.status = updated.status;
       },

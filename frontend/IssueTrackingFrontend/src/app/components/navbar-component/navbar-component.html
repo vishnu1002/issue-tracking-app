@@ -1,104 +1,127 @@
 <nav
-  class="relative bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-black/10 dark:after:bg-white/10"
+  class="relative bg-gray-800/50 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/10"
 >
   <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
     <div class="relative flex h-16 items-center justify-between">
-      <!-- Left section -->
+      <!-- Logo and Desktop Links -->
       <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
         <div class="flex shrink-0 items-center">
           <img
             src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
-            alt="Your Company"
+            alt="Logo"
             class="h-8 w-auto"
           />
         </div>
 
-        <!-- Desktop nav links -->
         <div class="hidden sm:ml-6 sm:block">
           <div class="flex space-x-4">
-            <!-- User & Representative -->
-            <ng-container *ngIf="role === 'User' || role === 'Representative'">
+            <ng-container *ngIf="user()">
+              <!-- User role buttons -->
               <a
-                routerLink="/tickets"
+                *ngIf="isUser()"
+                routerLink="/dashboard/tickets"
                 routerLinkActive="bg-gray-950/50 text-white"
-                class="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white"
+                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
+                >My Tickets</a
               >
-                My Tickets
-              </a>
               <a
-                routerLink="/history"
+                *ngIf="isUser()"
+                routerLink="/dashboard/history"
                 routerLinkActive="bg-gray-950/50 text-white"
-                class="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white"
+                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
+                >History</a
               >
-                History
-              </a>
-            </ng-container>
 
-            <!-- Admin -->
-            <ng-container *ngIf="role === 'Admin'">
+              <!-- Representative role buttons -->
               <a
-                routerLink="/users"
+                *ngIf="isRep()"
+                routerLink="/dashboard/tickets"
                 routerLinkActive="bg-gray-950/50 text-white"
-                class="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white"
+                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
+                >View Tickets</a
               >
-                Users
-              </a>
               <a
-                routerLink="/tickets"
+                *ngIf="isRep()"
+                routerLink="/dashboard/history"
                 routerLinkActive="bg-gray-950/50 text-white"
-                class="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white"
+                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
+                >History</a
               >
-                All Tickets
-              </a>
-            </ng-container>
 
-            <!-- Common for all -->
-            <a
-              routerLink="/profile"
-              routerLinkActive="bg-gray-950/50 text-white"
-              class="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white"
-            >
-              Profile
-            </a>
+              <!-- Admin role buttons -->
+              <a
+                *ngIf="isAdmin()"
+                routerLink="/dashboard/users"
+                routerLinkActive="bg-gray-950/50 text-white"
+                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
+                >View Users</a
+              >
+              <a
+                *ngIf="isAdmin()"
+                routerLink="/dashboard/tickets"
+                routerLinkActive="bg-gray-950/50 text-white"
+                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
+                >View Tickets</a
+              >
+            </ng-container>
           </div>
         </div>
       </div>
 
-      <!-- Right section -->
+      <!-- Avatar dropdown -->
       <div
         class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0"
       >
-        <el-dropdown class="relative ml-3">
-          <button
-            class="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-          >
-            <span class="sr-only">Open user menu</span>
-            <img
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-              alt=""
-              class="size-8 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10"
-            />
-          </button>
+        <ng-container *ngIf="user()">
+          <div class="relative ml-3">
+            <div>
+              <button
+                type="button"
+                (click)="toggleDropdown()"
+                class="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                id="user-menu-button"
+                aria-expanded="false"
+                aria-haspopup="true"
+              >
+                <span class="absolute -inset-1.5"></span>
+                <span class="sr-only">Open user menu</span>
+                <img
+                  class="h-8 w-8 rounded-full"
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  alt="User avatar"
+                />
+              </button>
+            </div>
 
-          <el-menu
-            anchor="bottom end"
-            popover
-            class="w-48 origin-top-right rounded-md bg-white text-gray-900 outline -outline-offset-1 outline-black/10 dark:bg-gray-800 dark:text-gray-100 dark:outline-white/10 transition"
-          >
-            <a
-              routerLink="/profile"
-              class="block px-4 py-2 text-sm text-gray-300 focus:bg-white/5 focus:outline-hidden"
+            <!-- Dropdown menu -->
+            <div
+              *ngIf="isDropdownOpen"
+              class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+              role="menu"
+              aria-orientation="vertical"
+              aria-labelledby="user-menu-button"
+              tabindex="-1"
             >
-              Your profile
-            </a>
-            <button
-              (click)="logout()"
-              class="block w-full text-left px-4 py-2 text-sm text-gray-300 focus:bg-white/5 focus:outline-hidden"
-            >
-              Sign out
-            </button>
-          </el-menu>
-        </el-dropdown>
+              <a
+                routerLink="/dashboard/profile"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                role="menuitem"
+                tabindex="-1"
+                id="user-menu-item-0"
+                >Your Profile</a
+              >
+              <button
+                (click)="logout()"
+                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                role="menuitem"
+                tabindex="-1"
+                id="user-menu-item-2"
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+        </ng-container>
       </div>
     </div>
   </div>
