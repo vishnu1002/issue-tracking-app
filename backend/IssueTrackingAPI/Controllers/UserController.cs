@@ -41,6 +41,27 @@ public class UserController : ControllerBase
         return Ok(userDtos);
     }
 
+    // 
+    // Get Representatives
+    // GET: api/users/representatives
+    //
+    [Authorize]
+    [HttpGet("representatives")]
+    public async Task<ActionResult<IEnumerable<UserRead_DTO>>> GetRepresentatives()
+    {
+        var users = await _userRepo.GetAllUsers();
+        var representatives = users.Where(u => u.Role == "Rep").Select(u => new UserRead_DTO
+        {
+            Id = u.Id,
+            Name = u.Name,
+            Email = u.Email,
+            Role = u.Role,
+            CreatedAt = u.CreatedAt
+        });
+
+        return Ok(representatives);
+    }
+
     //
     // Get User By Id
     // GET: api/users/{id}
@@ -141,6 +162,46 @@ public class UserController : ControllerBase
     }
 
     //
+    // Update Password
+    // PUT: api/users/{id}/password
+    //
+    [Authorize]
+    [HttpPut("{id}/password")]
+    public async Task<IActionResult> UpdatePassword(int id, [FromBody] UpdatePasswordRequest request)
+    {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        // User can only update their own password
+        if (currentRole != "Admin" && currentUserId != id)
+            return Forbid();
+
+        var user = await _userRepo.GetUserById(id);
+        if (user == null) return NotFound(new { message = "User not found" });
+
+        // Verify current password
+        bool isValidPassword = false;
+        try
+        {
+            isValidPassword = BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash);
+        }
+        catch
+        {
+            // Fallback: compare plaintext (dummy data case)
+            isValidPassword = request.CurrentPassword == user.PasswordHash;
+        }
+
+        if (!isValidPassword)
+            return BadRequest(new { message = "Current password is incorrect" });
+
+        // Update password
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        await _userRepo.UpdateUser(user);
+
+        return Ok(new { message = "Password updated successfully" });
+    }
+
+    //
     // Delete User
     // DELETE: api/users/{id}
     //
@@ -160,4 +221,10 @@ public static class Roles
     public const string Admin = "Admin";
     public const string User = "User";
     public const string Rep = "Rep";
+}
+
+public class UpdatePasswordRequest
+{
+    public required string CurrentPassword { get; set; }
+    public required string NewPassword { get; set; }
 }

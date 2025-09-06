@@ -16,6 +16,10 @@ export class UserService {
     return this.http.get<UserModel[]>(this.baseUrl);
   }
 
+  getRepresentatives(): Observable<UserModel[]> {
+    return this.http.get<UserModel[]>(`${this.baseUrl}/representatives`);
+  }
+
   getUser(id: string): Observable<UserModel> {
     return this.http.get<UserModel>(`${this.baseUrl}/${id}`);
   }
@@ -27,6 +31,13 @@ export class UserService {
     role: string;
   }): Observable<UserModel> {
     return this.http.put<UserModel>(`${this.baseUrl}/${data.id}`, data);
+  }
+
+  updatePassword(id: number, currentPassword: string, newPassword: string): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${id}/password`, {
+      currentPassword,
+      newPassword,
+    });
   }
 
   deleteUser(id: string): Observable<void> {

@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // <-- for ngModel, ngForm
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule], // <-- include here
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
 })
 export class Login {
@@ -22,7 +22,25 @@ export class Login {
     this.redirectUrl = this.route.snapshot.queryParamMap.get('redirect');
   }
 
+  isFormValid(): boolean {
+    return (
+      this.credentials.email.trim() !== '' &&
+      this.credentials.password.trim() !== '' &&
+      this.credentials.password.length >= 6 &&
+      this.isValidEmail(this.credentials.email)
+    );
+  }
+
+  isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
   submit() {
+    if (!this.isFormValid()) {
+      return;
+    }
+
     this.loading = true;
     this.error = null;
 
@@ -38,8 +56,16 @@ export class Login {
       },
       error: (err) => {
         this.loading = false;
-        this.error = err.error?.message || 'Login failed. Please try again.';
+        this.error =
+          err.error?.message || 'Login failed. Please check your credentials and try again.';
       },
     });
+  }
+
+  togglePasswordVisibility(field: string) {
+    const input = document.querySelector(`input[name="${field}"]`) as HTMLInputElement;
+    if (input) {
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
   }
 }

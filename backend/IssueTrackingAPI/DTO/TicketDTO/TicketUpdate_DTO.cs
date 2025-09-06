@@ -24,4 +24,5 @@ public class TicketUpdate_DTO
 
     public int? AssignedToUserId { get; set; }
     public string? Comment { get; set; }
+    public string? ResolutionNotes { get; set; }
 }

@@ -31,10 +31,15 @@ public class TicketModel
     public int? AssignedToUserId { get; set; } // nullable
     public UserModel AssignedToUser { get; set; }
 
-    public string Comment { get; set; } // Comment
+    public string? Comment { get; set; } // Comment
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Ticket Created Date Time
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow; // Ticket Updated Date Time
+
+    // KPI Fields
+    public DateTime? ResolvedAt { get; set; } // When ticket was marked as resolved
+    public TimeSpan? ResolutionTime { get; set; } // Calculated resolution time
+    public string? ResolutionNotes { get; set; } // Notes about resolution
 
     // Navigation properties
     public ICollection<AttachmentModel> Attachments { get; set; }

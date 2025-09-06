@@ -38,7 +38,7 @@ export class History implements OnInit {
               ticket.status === 'Closed' &&
               ticket.createdByUserId === parseInt(this.auth.getCurrentUser()?.id || '0')
           );
-        } else if (this.auth.getRole() === 'Representative') {
+        } else if (this.auth.getRole() === 'Rep') {
           // Representatives see tickets they closed
           this.tickets = allTickets.filter(
             (ticket) =>

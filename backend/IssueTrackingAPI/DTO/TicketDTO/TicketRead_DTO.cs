@@ -13,4 +13,7 @@ public class TicketRead_DTO
     public string? Comment { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public DateTime? ResolvedAt { get; set; }
+    public TimeSpan? ResolutionTime { get; set; }
+    public string? ResolutionNotes { get; set; }
 }

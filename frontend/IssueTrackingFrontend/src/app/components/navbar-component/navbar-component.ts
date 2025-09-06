@@ -31,7 +31,7 @@ export class NavbarComponent {
   }
 
   isRep() {
-    return this.role === 'Representative';
+    return this.role === 'Rep';
   }
 
   isAdmin() {
@@ -40,6 +40,10 @@ export class NavbarComponent {
 
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  closeDropdown() {
+    this.isDropdownOpen = false;
   }
 
   logout() {

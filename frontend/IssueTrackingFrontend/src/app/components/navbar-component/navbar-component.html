@@ -24,13 +24,6 @@
                 class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
                 >My Tickets</a
               >
-              <a
-                *ngIf="isUser()"
-                routerLink="/dashboard/history"
-                routerLinkActive="bg-gray-950/50 text-white"
-                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
-                >History</a
-              >
 
               <!-- Representative role buttons -->
               <a
@@ -39,13 +32,6 @@
                 routerLinkActive="bg-gray-950/50 text-white"
                 class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
                 >View Tickets</a
-              >
-              <a
-                *ngIf="isRep()"
-                routerLink="/dashboard/history"
-                routerLinkActive="bg-gray-950/50 text-white"
-                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
-                >History</a
               >
 
               <!-- Admin role buttons -->
@@ -96,15 +82,20 @@
             <!-- Dropdown menu -->
             <div
               *ngIf="isDropdownOpen"
-              class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+              class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-gray-600 ring-opacity-5 focus:outline-none border border-gray-700"
               role="menu"
               aria-orientation="vertical"
               aria-labelledby="user-menu-button"
               tabindex="-1"
             >
+              <div class="px-4 py-2 border-b border-gray-700">
+                <p class="text-sm font-medium text-white">{{ user()?.name }}</p>
+                <p class="text-xs text-gray-400">{{ user()?.email }}</p>
+              </div>
               <a
                 routerLink="/dashboard/profile"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                (click)="closeDropdown()"
+                class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                 role="menuitem"
                 tabindex="-1"
                 id="user-menu-item-0"
@@ -112,7 +103,7 @@
               >
               <button
                 (click)="logout()"
-                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                class="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                 role="menuitem"
                 tabindex="-1"
                 id="user-menu-item-2"

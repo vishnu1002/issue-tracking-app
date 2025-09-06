@@ -14,20 +14,19 @@ import { AuthService } from '../../core/services/auth.service';
 export class Tickets implements OnInit {
   role: string | null = null;
   tickets: TicketModel[] = [];
+  filteredTickets: TicketModel[] = [];
   loading = signal(false);
 
-  // form for new ticket (user only)
-  newTicket: Partial<TicketModel> = {
-    title: '',
-    description: '',
-    priority: 'Low',
-    type: 'Software',
-  };
+  // Filter properties
+  searchTerm = '';
+  statusFilter = '';
+  priorityFilter = '';
+  typeFilter = '';
 
   constructor(private ticketService: TicketService, private auth: AuthService) {}
 
   ngOnInit() {
-    this.role = this.auth.getRole(); // ✅ safe now
+    this.role = this.auth.getRole();
     this.loadTickets();
   }
 
@@ -37,42 +36,45 @@ export class Tickets implements OnInit {
     // The API automatically filters tickets based on user role
     this.ticketService.getAllTickets().subscribe({
       next: (res) => {
-        this.tickets = res;
+        // Sort tickets by creation date (newest first)
+        this.tickets = res.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        this.applyFilters();
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
     });
   }
 
-  createTicket() {
-    if (this.role !== 'User') return;
+  applyFilters() {
+    this.filteredTickets = this.tickets.filter((ticket) => {
+      const matchesSearch =
+        !this.searchTerm ||
+        ticket.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        ticket.description.toLowerCase().includes(this.searchTerm.toLowerCase());
 
-    const currentUser = this.auth.getCurrentUser();
-    if (!currentUser) return;
+      const matchesStatus =
+        !this.statusFilter ||
+        ticket.status.toLowerCase() === this.statusFilter.toLowerCase() ||
+        this.getStatusDisplay(ticket.status).toLowerCase() === this.statusFilter.toLowerCase();
+      const matchesPriority = !this.priorityFilter || ticket.priority === this.priorityFilter;
+      const matchesType = !this.typeFilter || ticket.type === this.typeFilter;
 
-    const payload = {
-      title: this.newTicket.title || '',
-      description: this.newTicket.description || '',
-      priority: this.newTicket.priority || 'Low',
-      type: this.newTicket.type || 'Software',
-      createdByUserId: parseInt(currentUser.id),
-    };
-
-    this.ticketService.createTicket(payload).subscribe({
-      next: (ticket) => {
-        this.tickets.push(ticket);
-        this.newTicket = {
-          title: '',
-          description: '',
-          priority: 'Low',
-          type: 'Software',
-        };
-      },
+      return matchesSearch && matchesStatus && matchesPriority && matchesType;
     });
   }
 
+  clearFilters() {
+    this.searchTerm = '';
+    this.statusFilter = '';
+    this.priorityFilter = '';
+    this.typeFilter = '';
+    this.applyFilters();
+  }
+
   updateStatus(ticket: TicketModel, status: TicketModel['status']) {
-    if (this.role !== 'Representative') return;
+    if (this.role !== 'Rep') return;
 
     const payload = {
       id: ticket.id,
@@ -90,5 +92,43 @@ export class Tickets implements OnInit {
         ticket.status = updated.status;
       },
     });
+  }
+
+  getStatusDisplay(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'open':
+        return 'Open';
+      case 'in_progress':
+      case 'in progress':
+        return 'In Progress';
+      case 'resolved':
+        return 'Resolved';
+      case 'closed':
+        return 'Closed';
+      default:
+        return status || 'Unknown';
+    }
+  }
+
+  deleteTicket(ticket: TicketModel) {
+    if (this.role !== 'Admin') return;
+
+    if (
+      confirm(
+        `Are you sure you want to delete the ticket "${ticket.title}"? This action cannot be undone.`
+      )
+    ) {
+      this.ticketService.deleteTicket(ticket.id).subscribe({
+        next: () => {
+          // Remove ticket from the list
+          this.tickets = this.tickets.filter((t) => t.id !== ticket.id);
+          this.applyFilters();
+        },
+        error: (err) => {
+          console.error('Failed to delete ticket:', err);
+          alert('Failed to delete ticket. Please try again.');
+        },
+      });
+    }
   }
 }

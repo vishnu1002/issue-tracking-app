@@ -7,7 +7,6 @@ import { Dashboard } from './pages/dashboard/dashboard';
 
 import { Landing } from './pages/landing/landing';
 import { Tickets } from './pages/tickets/tickets';
-import { History } from './pages/history/history';
 import { Profile } from './pages/profile/profile';
 import { Users } from './pages/users/users';
 
@@ -27,7 +26,6 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'tickets', pathMatch: 'full' },
       { path: 'tickets', component: Tickets },
-      { path: 'history', component: History },
       { path: 'profile', component: Profile },
       {
         path: 'users',
