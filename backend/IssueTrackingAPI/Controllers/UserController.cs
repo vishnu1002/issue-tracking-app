@@ -209,10 +209,26 @@ public class UserController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser(int id)
     {
-        var deleted = await _userRepo.DeleteUser(id);
-        if (!deleted) return NotFound(new { message = "User not found" });
+        // First check if user exists
+        var user = await _userRepo.GetUserById(id);
+        if (user == null) return NotFound(new { message = "User not found" });
 
-        return Ok("User Deleted");
+        // Check if user has any tickets
+        if (user.CreatedTickets.Any() || user.AssignedTickets.Any())
+        {
+            return BadRequest(new { 
+                message = "Cannot delete user. User has associated tickets. Please reassign or delete the tickets first.",
+                hasCreatedTickets = user.CreatedTickets.Any(),
+                hasAssignedTickets = user.AssignedTickets.Any(),
+                createdTicketsCount = user.CreatedTickets.Count,
+                assignedTicketsCount = user.AssignedTickets.Count
+            });
+        }
+
+        var deleted = await _userRepo.DeleteUser(id);
+        if (!deleted) return StatusCode(500, new { message = "Failed to delete user" });
+
+        return Ok(new { message = "User deleted successfully" });
     }
 }
 

@@ -283,6 +283,62 @@ public class TicketController : ControllerBase
     }
 
     //
+    // Update Ticket Comment
+    // PUT: api/ticket/{id}/comment
+    //
+    [HttpPut("{id}/comment")]
+    [Authorize(Roles = "Rep,Admin")]
+    public async Task<ActionResult<TicketRead_DTO>> UpdateTicketComment(int id, [FromBody] UpdateCommentRequest request)
+    {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        var existing = await _ticketRepo.GetTicketById(id);
+        if (existing == null) return NotFound(new { message = "Ticket not found" });
+
+        // Role restrictions - Reps can comment on tickets assigned to them OR unassigned tickets
+        if (currentRole == "Rep" && existing.AssignedToUserId != null && existing.AssignedToUserId != currentUserId)
+            return StatusCode(403, new { message = "You can only comment on tickets assigned to you or unassigned tickets" });
+
+        existing.Comment = request.Comment;
+        existing.UpdatedAt = DateTime.UtcNow;
+
+        var updatedTicket = await _ticketRepo.UpdateTicket(existing);
+
+        // Send notification to ticket creator about the comment
+        try
+        {
+            if (existing.CreatedByUserId != currentUserId)
+            {
+                await _notificationService.SendNotificationAsync(
+                    existing.CreatedByUserId,
+                    existing.Id,
+                    "TicketCommented",
+                    $"A comment has been added to your ticket '{existing.Title}'");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Notification error: {ex.Message}");
+        }
+
+        return Ok(new TicketRead_DTO
+        {
+            Id = updatedTicket.Id,
+            Title = updatedTicket.Title,
+            Description = updatedTicket.Description,
+            Priority = updatedTicket.Priority,
+            Type = updatedTicket.Type,
+            Status = updatedTicket.Status,
+            CreatedByUserId = updatedTicket.CreatedByUserId,
+            AssignedToUserId = updatedTicket.AssignedToUserId,
+            Comment = updatedTicket.Comment,
+            CreatedAt = updatedTicket.CreatedAt,
+            UpdatedAt = updatedTicket.UpdatedAt
+        });
+    }
+
+    //
     // Delete Ticket
     // DELETE: api/tickets/{id}
     //
@@ -295,4 +351,10 @@ public class TicketController : ControllerBase
 
         return NoContent();
     }
+}
+
+// Request model for comment updates
+public class UpdateCommentRequest
+{
+    public string? Comment { get; set; }
 }

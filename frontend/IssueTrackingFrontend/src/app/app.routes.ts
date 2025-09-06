@@ -9,6 +9,7 @@ import { Landing } from './pages/landing/landing';
 import { Tickets } from './pages/tickets/tickets';
 import { Profile } from './pages/profile/profile';
 import { Users } from './pages/users/users';
+import { Analytics } from './pages/analytics/analytics';
 
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
@@ -30,6 +31,12 @@ export const routes: Routes = [
       {
         path: 'users',
         component: Users,
+        canActivate: [roleGuard],
+        data: { roles: ['Admin'] },
+      },
+      {
+        path: 'analytics',
+        component: Analytics,
         canActivate: [roleGuard],
         data: { roles: ['Admin'] },
       },

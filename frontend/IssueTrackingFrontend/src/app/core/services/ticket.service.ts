@@ -49,4 +49,8 @@ export class TicketService {
   deleteTicket(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
+
+  updateTicketComment(id: number, comment: string): Observable<TicketModel> {
+    return this.http.put<TicketModel>(`${this.baseUrl}/${id}/comment`, { comment });
+  }
 }

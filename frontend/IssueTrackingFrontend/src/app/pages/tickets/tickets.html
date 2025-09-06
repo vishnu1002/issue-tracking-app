@@ -154,26 +154,97 @@
         </span>
       </div>
 
-      <!-- Rep: update status -->
-      <div *ngIf="role === 'Rep'" class="mt-4 flex gap-2">
-        <button
-          (click)="updateStatus(ticket, 'IN_PROGRESS')"
-          class="px-4 py-2 text-sm font-medium text-yellow-800 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors cursor-pointer"
-        >
-          In Progress
-        </button>
-        <button
-          (click)="updateStatus(ticket, 'RESOLVED')"
-          class="px-4 py-2 text-sm font-medium text-green-800 bg-green-100 hover:bg-green-200 rounded-md transition-colors cursor-pointer"
-        >
-          Resolve
-        </button>
-        <button
-          (click)="updateStatus(ticket, 'CLOSED')"
-          class="px-4 py-2 text-sm font-medium text-red-800 bg-red-100 hover:bg-red-200 rounded-md transition-colors cursor-pointer"
-        >
-          Close
-        </button>
+      <!-- User: Display Rep comments -->
+      <div *ngIf="role === 'User' && ticket.comment" class="mt-4 border-t border-gray-600 pt-4">
+        <h4 class="text-sm font-medium text-gray-300 mb-2">Rep Comment</h4>
+        <div class="bg-gray-700 p-3 rounded-lg">
+          <p class="text-gray-200 text-sm">{{ ticket.comment }}</p>
+        </div>
+      </div>
+
+      <!-- Rep: update status and comment functionality -->
+      <div *ngIf="role === 'Rep'" class="mt-4 space-y-4">
+        <!-- Status Update Buttons -->
+        <div class="flex gap-2">
+          <button
+            (click)="updateStatus(ticket, 'IN_PROGRESS')"
+            class="px-4 py-2 text-sm font-medium text-yellow-800 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors cursor-pointer"
+          >
+            In Progress
+          </button>
+          <button
+            (click)="updateStatus(ticket, 'RESOLVED')"
+            class="px-4 py-2 text-sm font-medium text-green-800 bg-green-100 hover:bg-green-200 rounded-md transition-colors cursor-pointer"
+          >
+            Resolve
+          </button>
+          <button
+            (click)="updateStatus(ticket, 'CLOSED')"
+            class="px-4 py-2 text-sm font-medium text-red-800 bg-red-100 hover:bg-red-200 rounded-md transition-colors cursor-pointer"
+          >
+            Close
+          </button>
+        </div>
+
+        <!-- Comment Section -->
+        <div class="border-t border-gray-600 pt-4">
+          <h4 class="text-sm font-medium text-gray-300 mb-2">Rep Comment</h4>
+
+          <!-- Display existing comment -->
+          <div *ngIf="!editingComment[ticket.id] && ticket.comment" class="mb-3">
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <p class="text-gray-200 text-sm">{{ ticket.comment }}</p>
+            </div>
+            <button
+              (click)="startEditingComment(ticket)"
+              class="mt-2 text-xs text-indigo-400 hover:text-indigo-300 cursor-pointer"
+            >
+              Edit Comment
+            </button>
+          </div>
+
+          <!-- Add comment button when no comment exists -->
+          <div *ngIf="!editingComment[ticket.id] && !ticket.comment">
+            <button
+              (click)="startEditingComment(ticket)"
+              class="inline-flex items-center px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-md transition-colors cursor-pointer"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                ></path>
+              </svg>
+              Add Comment
+            </button>
+          </div>
+
+          <!-- Add/Edit comment form -->
+          <div *ngIf="editingComment[ticket.id]">
+            <textarea
+              [(ngModel)]="commentText[ticket.id]"
+              placeholder="Add a comment about this ticket..."
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            ></textarea>
+            <div class="mt-2 flex gap-2">
+              <button
+                (click)="saveComment(ticket)"
+                class="px-3 py-1 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors cursor-pointer"
+              >
+                {{ ticket.comment ? 'Update' : 'Add' }} Comment
+              </button>
+              <button
+                (click)="cancelEditingComment(ticket)"
+                class="px-3 py-1 text-xs font-medium text-gray-400 hover:text-gray-300 cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Admin: delete ticket -->

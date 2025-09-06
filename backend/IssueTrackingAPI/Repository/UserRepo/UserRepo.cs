@@ -60,8 +60,46 @@ public class UserRepo : IUserRepo
     // Delete User
     public async Task<bool> DeleteUser(int id)
     {
-        var user = await _context.Users_Table.FindAsync(id);
+        var user = await _context.Users_Table
+            .Include(u => u.CreatedTickets)
+            .Include(u => u.AssignedTickets)
+            .FirstOrDefaultAsync(u => u.Id == id);
+            
         if (user == null) return false;
+
+        // Check if user has any tickets - if so, we need to handle them first
+        if (user.CreatedTickets.Any() || user.AssignedTickets.Any())
+        {
+            // Prevent deletion if user has tickets
+            return false;
+        }
+
+        _context.Users_Table.Remove(user);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    // Delete User with ticket reassignment (alternative method)
+    public async Task<bool> DeleteUserWithReassignment(int id, int? reassignToUserId = null)
+    {
+        var user = await _context.Users_Table
+            .Include(u => u.CreatedTickets)
+            .Include(u => u.AssignedTickets)
+            .FirstOrDefaultAsync(u => u.Id == id);
+            
+        if (user == null) return false;
+
+        // Reassign created tickets to another user or set to null
+        foreach (var ticket in user.CreatedTickets)
+        {
+            ticket.CreatedByUserId = reassignToUserId ?? 1; // Default to admin (ID 1) or specified user
+        }
+
+        // Reassign assigned tickets to another user or set to null
+        foreach (var ticket in user.AssignedTickets)
+        {
+            ticket.AssignedToUserId = reassignToUserId;
+        }
 
         _context.Users_Table.Remove(user);
         await _context.SaveChangesAsync();

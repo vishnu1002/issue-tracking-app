@@ -94,6 +94,37 @@ export class Tickets implements OnInit {
     });
   }
 
+  // Comment functionality for Reps
+  editingComment: { [key: number]: boolean } = {};
+  commentText: { [key: number]: string } = {};
+
+  startEditingComment(ticket: TicketModel) {
+    if (this.role !== 'Rep') return;
+    this.editingComment[ticket.id] = true;
+    this.commentText[ticket.id] = ticket.comment || '';
+  }
+
+  cancelEditingComment(ticket: TicketModel) {
+    this.editingComment[ticket.id] = false;
+    this.commentText[ticket.id] = '';
+  }
+
+  saveComment(ticket: TicketModel) {
+    if (this.role !== 'Rep') return;
+
+    this.ticketService.updateTicketComment(ticket.id, this.commentText[ticket.id]).subscribe({
+      next: (updated) => {
+        ticket.comment = updated.comment;
+        this.editingComment[ticket.id] = false;
+        this.commentText[ticket.id] = '';
+      },
+      error: (err) => {
+        console.error('Failed to save comment:', err);
+        alert('Failed to save comment. Please try again.');
+      },
+    });
+  }
+
   getStatusDisplay(status: string): string {
     switch (status?.toLowerCase()) {
       case 'open':

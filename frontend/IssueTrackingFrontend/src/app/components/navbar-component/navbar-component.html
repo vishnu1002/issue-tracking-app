@@ -49,6 +49,13 @@
                 class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
                 >View Tickets</a
               >
+              <a
+                *ngIf="isAdmin()"
+                routerLink="/dashboard/analytics"
+                routerLinkActive="bg-gray-950/50 text-white"
+                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
+                >Analytics & KPIs</a
+              >
             </ng-container>
           </div>
         </div>
