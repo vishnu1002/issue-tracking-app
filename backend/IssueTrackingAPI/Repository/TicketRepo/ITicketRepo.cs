@@ -1,4 +1,5 @@
 using IssueTrackingAPI.Model;
+using IssueTrackingAPI.DTO.TicketDTO;
 
 namespace IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
 
@@ -12,6 +13,8 @@ public interface ITicketRepo
 
     Task<IEnumerable<TicketModel>> GetTicketsByCreator(int userId);
     Task<IEnumerable<TicketModel>> GetTicketsByAssignee(int userId);
+    Task<IEnumerable<TicketModel>> GetUnassignedTickets();
+    Task<(IEnumerable<TicketModel> tickets, int totalCount)> SearchTickets(TicketSearch_DTO searchDto);
 
 }
 

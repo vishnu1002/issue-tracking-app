@@ -24,6 +24,31 @@ public class AuthController : ControllerBase
     }
 
     [AllowAnonymous]
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        // Check if user already exists
+        var existingUser = await _userRepo.GetUserByEmail(request.Email);
+        if (existingUser != null)
+            return BadRequest(new { message = "User with this email already exists" });
+
+        // Create new user
+        var user = new UserModel
+        {
+            Name = request.Name,
+            Email = request.Email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            Role = "User" // Default role for new registrations
+        };
+
+        var createdUser = await _userRepo.CreateUser(user);
+        if (createdUser == null)
+            return BadRequest(new { message = "Failed to create user" });
+
+        return Ok(new { message = "User created successfully" });
+    }
+
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
@@ -59,7 +84,7 @@ public class AuthController : ControllerBase
 
         var claims = new[]
         {
-            new Claim("id", user.Id.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Name),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role, user.Role)
@@ -83,6 +108,16 @@ public class AuthController : ControllerBase
 
 public class LoginRequest
 {
+    [Required]
+    public required string Email { get; set; }
+    [Required]
+    public required string Password { get; set; }
+}
+
+public class RegisterRequest
+{
+    [Required]
+    public required string Name { get; set; }
     [Required]
     public required string Email { get; set; }
     [Required]

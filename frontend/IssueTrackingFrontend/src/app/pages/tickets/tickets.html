@@ -1,0 +1,198 @@
+<div>
+  <!-- Filter Section -->
+  <div class="mb-6 bg-gray-800 p-4 rounded-xl shadow">
+    <div class="flex flex-wrap gap-4 items-end">
+      <div class="flex-1 min-w-48">
+        <label class="block text-sm font-medium text-gray-300 mb-2">Search</label>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="applyFilters()"
+          placeholder="Search tickets..."
+          class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
+
+      <div class="min-w-32">
+        <label class="block text-sm font-medium text-gray-300 mb-2">Status</label>
+        <select
+          [(ngModel)]="statusFilter"
+          (change)="applyFilters()"
+          class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+        >
+          <option value="">All Status</option>
+          <option value="OPEN">Open</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="RESOLVED">Resolved</option>
+          <option value="CLOSED">Closed</option>
+        </select>
+      </div>
+
+      <div class="min-w-32">
+        <label class="block text-sm font-medium text-gray-300 mb-2">Priority</label>
+        <select
+          [(ngModel)]="priorityFilter"
+          (change)="applyFilters()"
+          class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="">All Priority</option>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+      </div>
+
+      <div class="min-w-32">
+        <label class="block text-sm font-medium text-gray-300 mb-2">Type</label>
+        <select
+          [(ngModel)]="typeFilter"
+          (change)="applyFilters()"
+          class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="">All Types</option>
+          <option value="Software">Software</option>
+          <option value="Hardware">Hardware</option>
+        </select>
+      </div>
+
+      <button
+        (click)="clearFilters()"
+        class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-600 hover:bg-gray-500 rounded-md transition-colors cursor-pointer"
+      >
+        Clear Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="flex justify-center items-center py-8">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+    <span class="ml-2 text-gray-400">Loading tickets...</span>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading() && filteredTickets.length === 0" class="text-center py-12">
+    <svg
+      class="mx-auto h-12 w-12 text-gray-400"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      ></path>
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-300">No tickets found</h3>
+    <p class="mt-1 text-sm text-gray-500">
+      <span *ngIf="role === 'User'">Get started by creating a new ticket.</span>
+      <span *ngIf="role === 'Rep'">No tickets are currently assigned to you.</span>
+      <span *ngIf="role === 'Admin'">No tickets have been created yet.</span>
+    </p>
+  </div>
+
+  <!-- Tickets List -->
+  <div *ngIf="!loading() && filteredTickets.length > 0" class="space-y-4">
+    <div
+      *ngFor="let ticket of filteredTickets"
+      class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 hover:border-gray-600 transition-colors"
+    >
+      <div class="flex justify-between items-start mb-3">
+        <h3 class="text-lg font-semibold text-white">{{ ticket.title }}</h3>
+        <span
+          class="px-3 py-1 text-xs font-medium rounded-full"
+          [ngClass]="{
+            'bg-green-100 text-green-800':
+              ticket.status === 'RESOLVED' || ticket.status === 'Resolved',
+            'bg-yellow-100 text-yellow-800':
+              ticket.status === 'IN_PROGRESS' || ticket.status === 'In Progress',
+            'bg-red-100 text-red-800': ticket.status === 'CLOSED' || ticket.status === 'Closed',
+            'bg-blue-100 text-blue-800': ticket.status === 'OPEN' || ticket.status === 'Open'
+          }"
+        >
+          {{ getStatusDisplay(ticket.status) }}
+        </span>
+      </div>
+
+      <p class="text-gray-300 text-sm mb-4 leading-relaxed">{{ ticket.description }}</p>
+
+      <div class="flex flex-wrap gap-4 text-xs text-gray-400 mb-4">
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          {{ ticket.priority }} Priority
+        </span>
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            ></path>
+          </svg>
+          {{ ticket.type }}
+        </span>
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            ></path>
+          </svg>
+          {{ ticket.createdAt | date : 'short' }}
+        </span>
+      </div>
+
+      <!-- Rep: update status -->
+      <div *ngIf="role === 'Rep'" class="mt-4 flex gap-2">
+        <button
+          (click)="updateStatus(ticket, 'IN_PROGRESS')"
+          class="px-4 py-2 text-sm font-medium text-yellow-800 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors cursor-pointer"
+        >
+          In Progress
+        </button>
+        <button
+          (click)="updateStatus(ticket, 'RESOLVED')"
+          class="px-4 py-2 text-sm font-medium text-green-800 bg-green-100 hover:bg-green-200 rounded-md transition-colors cursor-pointer"
+        >
+          Resolve
+        </button>
+        <button
+          (click)="updateStatus(ticket, 'CLOSED')"
+          class="px-4 py-2 text-sm font-medium text-red-800 bg-red-100 hover:bg-red-200 rounded-md transition-colors cursor-pointer"
+        >
+          Close
+        </button>
+      </div>
+
+      <!-- Admin: delete ticket -->
+      <div *ngIf="role === 'Admin'" class="mt-4 flex justify-end">
+        <button
+          (click)="deleteTicket(ticket)"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-lg transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
+        >
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            ></path>
+          </svg>
+          Delete Ticket
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

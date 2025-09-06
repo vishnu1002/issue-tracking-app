@@ -1,6 +1,7 @@
 using IssueTrackingAPI.DTO.TicketDTO;
 using IssueTrackingAPI.Model;
 using IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
+using IssueTrackingAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -14,10 +15,12 @@ namespace IssueTrackingAPI.Controllers;
 public class TicketController : ControllerBase
 {
     private readonly ITicketRepo _ticketRepo;
+    private readonly INotificationSignalRService _notificationService;
 
-    public TicketController(ITicketRepo ticketRepo)
+    public TicketController(ITicketRepo ticketRepo, INotificationSignalRService notificationService)
     {
         _ticketRepo = ticketRepo;
+        _notificationService = notificationService;
     }
 
     //
@@ -41,7 +44,10 @@ public class TicketController : ControllerBase
                 tickets = await _ticketRepo.GetTicketsByCreator(currentUserId); // only tickets created by user
                 break;
             case Roles.Rep:
-                tickets = await _ticketRepo.GetTicketsByAssignee(currentUserId); // only tickets assigned to rep
+                // Representatives can see tickets assigned to them AND unassigned tickets
+                var assignedTickets = await _ticketRepo.GetTicketsByAssignee(currentUserId);
+                var unassignedTickets = await _ticketRepo.GetUnassignedTickets();
+                tickets = assignedTickets.Concat(unassignedTickets);
                 break;
             default:
                 return Forbid();
@@ -59,10 +65,77 @@ public class TicketController : ControllerBase
             AssignedToUserId = t.AssignedToUserId,
             Comment = t.Comment,
             CreatedAt = t.CreatedAt,
-            UpdatedAt = t.UpdatedAt
+            UpdatedAt = t.UpdatedAt,
+            ResolvedAt = t.ResolvedAt,
+            ResolutionTime = t.ResolutionTime,
+            ResolutionNotes = t.ResolutionNotes
         });
 
         return Ok(ticketDtos);
+    }
+
+    //
+    // Search Tickets
+    // GET: api/ticket/search
+    //
+    [HttpGet("search")]
+    public async Task<ActionResult<object>> SearchTickets([FromQuery] TicketSearch_DTO searchDto)
+    {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        // Apply role-based filtering to search
+        switch (currentRole)
+        {
+            case Roles.Admin:
+                // Admins can search all tickets
+                break;
+            case Roles.User:
+                // Users can only search their own tickets
+                searchDto.CreatedByUserId = currentUserId;
+                break;
+            case Roles.Rep:
+                // Representatives can search tickets assigned to them and unassigned tickets
+                // We'll handle this in the repository by modifying the search logic
+                break;
+            default:
+                return Forbid();
+        }
+
+        var (tickets, totalCount) = await _ticketRepo.SearchTickets(searchDto);
+
+        // For Representatives, filter to show only assigned and unassigned tickets
+        if (currentRole == Roles.Rep)
+        {
+            tickets = tickets.Where(t => t.AssignedToUserId == currentUserId || t.AssignedToUserId == null);
+        }
+
+        var ticketDtos = tickets.Select(t => new TicketRead_DTO
+        {
+            Id = t.Id,
+            Title = t.Title,
+            Description = t.Description,
+            Priority = t.Priority,
+            Type = t.Type,
+            Status = t.Status,
+            CreatedByUserId = t.CreatedByUserId,
+            AssignedToUserId = t.AssignedToUserId,
+            Comment = t.Comment,
+            CreatedAt = t.CreatedAt,
+            UpdatedAt = t.UpdatedAt,
+            ResolvedAt = t.ResolvedAt,
+            ResolutionTime = t.ResolutionTime,
+            ResolutionNotes = t.ResolutionNotes
+        });
+
+        return Ok(new
+        {
+            tickets = ticketDtos,
+            totalCount = totalCount,
+            pageNumber = searchDto.PageNumber,
+            pageSize = searchDto.PageSize,
+            totalPages = (int)Math.Ceiling((double)totalCount / searchDto.PageSize)
+        });
     }
 
     //
@@ -112,12 +185,36 @@ public class TicketController : ControllerBase
             Status = "Open",
             CreatedByUserId = dto.CreatedByUserId,
             AssignedToUserId = dto.AssignedToUserId,
-            Comment = dto.Comment,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            Comment = dto.Comment ?? string.Empty,
+            CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time")),
+            UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"))
         };
 
         var createdTicket = await _ticketRepo.AddTicket(ticket);
+
+        // Send notifications (with error handling)
+        try
+        {
+            await _notificationService.SendNotificationToAdminsAsync(
+                createdTicket.Id, 
+                "TicketCreated", 
+                $"New ticket '{createdTicket.Title}' has been created");
+
+            if (createdTicket.AssignedToUserId.HasValue)
+            {
+                await _notificationService.SendNotificationAsync(
+                    createdTicket.AssignedToUserId.Value,
+                    createdTicket.Id,
+                    "TicketAssigned",
+                    $"You have been assigned to ticket '{createdTicket.Title}'");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log the error but don't fail the ticket creation
+            // In a production app, you'd want to use proper logging
+            Console.WriteLine($"Notification error: {ex.Message}");
+        }
 
         var ticketDto = new TicketRead_DTO
         {
@@ -144,7 +241,8 @@ public class TicketController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<TicketRead_DTO>> UpdateTicket(int id, [FromBody] TicketUpdate_DTO dto)
     {
-        var currentUserId = int.Parse(User.FindFirst("id").Value);
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
         var currentRole = User.FindFirst(ClaimTypes.Role).Value;
 
         if (id != dto.Id) return BadRequest(new { message = "Ticket ID mismatch" });
@@ -155,7 +253,8 @@ public class TicketController : ControllerBase
         // Role restrictions
         if (currentRole == "User" && existing.CreatedByUserId != currentUserId)
             return Forbid();
-        if (currentRole == "Rep" && existing.AssignedToUserId != currentUserId)
+
+        if (currentRole == "Rep" && existing.AssignedToUserId != null && existing.AssignedToUserId != currentUserId)
             return Forbid();
 
         existing.Title = dto.Title;
@@ -165,6 +264,7 @@ public class TicketController : ControllerBase
         existing.Status = dto.Status;
         existing.AssignedToUserId = dto.AssignedToUserId;
         existing.Comment = dto.Comment;
+        existing.ResolutionNotes = dto.ResolutionNotes;
 
         var updatedTicket = await _ticketRepo.UpdateTicket(existing);
 

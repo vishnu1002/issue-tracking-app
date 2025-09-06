@@ -1,0 +1,71 @@
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, NgForm } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './login.html',
+})
+export class Login {
+  credentials = { email: '', password: '' };
+  loading = false;
+  error: string | null = null;
+  redirectUrl: string | null = null;
+
+  constructor(private auth: AuthService, private router: Router, private route: ActivatedRoute) {}
+
+  ngOnInit() {
+    this.redirectUrl = this.route.snapshot.queryParamMap.get('redirect');
+  }
+
+  isFormValid(): boolean {
+    return (
+      this.credentials.email.trim() !== '' &&
+      this.credentials.password.trim() !== '' &&
+      this.credentials.password.length >= 6 &&
+      this.isValidEmail(this.credentials.email)
+    );
+  }
+
+  isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  submit() {
+    if (!this.isFormValid()) {
+      return;
+    }
+
+    this.loading = true;
+    this.error = null;
+
+    this.auth.login(this.credentials).subscribe({
+      next: (res) => {
+        this.loading = false;
+        // Get role from AuthService after login
+        const role = this.auth.getRole();
+        setTimeout(() => {
+          const target = this.redirectUrl ?? '/dashboard';
+          this.router.navigate([target]);
+        }, 0);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error =
+          err.error?.message || 'Login failed. Please check your credentials and try again.';
+      },
+    });
+  }
+
+  togglePasswordVisibility(field: string) {
+    const input = document.querySelector(`input[name="${field}"]`) as HTMLInputElement;
+    if (input) {
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+  }
+}

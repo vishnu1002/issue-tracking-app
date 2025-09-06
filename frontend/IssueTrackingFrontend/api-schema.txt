@@ -1,0 +1,140 @@
+----------------------------------------------------
+Auth Controller
+
+POST: /api/auth/login
+{
+  "email": "string",
+  "password": "string"
+}
+
+----------------------------------------------------
+Attachment Controller
+
+GET: /api/attachment
+[
+  {
+    "id": 0,
+    "ticketId": 0,
+    "fileName": "string",
+    "fileUrl": "string",
+    "uploadedAt": "2025-09-05T16:23:30.498Z"
+  }
+]
+POST: /api/attachment
+{
+  "ticketId": 0,
+  "fileName": "string",
+  "fileUrl": "string"
+}
+GET: /api/attachment/{id}
+id: 
+{
+  "id": 0,
+  "ticketId": 0,
+  "fileName": "string",
+  "fileUrl": "string",
+  "uploadedAt": "2025-09-05T16:24:03.776Z"
+}
+DELETE: /api/attachment/{id}
+id: 
+
+----------------------------------------------------
+Ticket Controller
+
+GET: /api/ticket
+[
+  {
+    "id": 0,
+    "title": "string",
+    "description": "string",
+    "priority": "string",
+    "type": "string",
+    "status": "string",
+    "createdByUserId": 0,
+    "assignedToUserId": 0,
+    "comment": "string",
+    "createdAt": "2025-09-05T16:26:27.515Z",
+    "updatedAt": "2025-09-05T16:26:27.515Z"
+  }
+]
+POST: /api/ticket
+{
+  "title": "string",
+  "description": "string",
+  "priority": "string",
+  "type": "string",
+  "createdByUserId": 0,
+  "assignedToUserId": 0,
+  "comment": "string"
+}
+GET: /api/ticket/{id}
+id: 
+{
+  "id": 0,
+  "title": "string",
+  "description": "string",
+  "priority": "string",
+  "type": "string",
+  "status": "string",
+  "createdByUserId": 0,
+  "assignedToUserId": 0,
+  "comment": "string",
+  "createdAt": "2025-09-05T16:26:44.037Z",
+  "updatedAt": "2025-09-05T16:26:44.037Z"
+}
+PUT: /api/ticket/{id}
+id: 
+{
+  "id": 0,
+  "title": "string",
+  "description": "string",
+  "priority": "string",
+  "type": "string",
+  "status": "string",
+  "assignedToUserId": 0,
+  "comment": "string"
+}
+DELETE: /api/ticket/{id}
+id: 
+
+----------------------------------------------------
+User Controller
+
+GET: /api/user
+[
+  {
+    "id": 0,
+    "name": "string",
+    "email": "string",
+    "role": "string",
+    "createdAt": "2025-09-05T16:27:52.356Z"
+  }
+]
+POST: /api/user
+{
+  "name": "string",
+  "email": "user@example.com",
+  "password": "string",
+  "role": "string"
+}
+GET: /api/user/{id}
+id: 
+{
+  "id": 0,
+  "name": "string",
+  "email": "string",
+  "role": "string",
+  "createdAt": "2025-09-05T16:28:07.907Z"
+}
+PUT: /api/user/{id}
+id: 
+{
+  "id": 0,
+  "name": "string",
+  "email": "user@example.com",
+  "role": "string"
+}
+DELETE: /api/user/{id}
+id: 
+
+----------------------------------------------------

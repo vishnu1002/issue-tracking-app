@@ -1,0 +1,584 @@
+UserController.cs
+using BCrypt.Net;
+using IssueTrackingAPI.DTO.UserDTO;
+using IssueTrackingAPI.Model;
+using IssueTrackingAPI.Repository.UserRepo.UserRepo;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Data;
+using System.Security.Claims;
+
+namespace IssueTrackingAPI.Controllers;
+
+[ApiController]
+[Route("api/user")]
+public class UserController : ControllerBase
+{
+    private readonly IUserRepo _userRepo;
+
+    public UserController(IUserRepo userRepo)
+    {
+        _userRepo = userRepo;
+    }
+
+    // 
+    // Get All Users
+    // GET: api/users
+    //
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<UserRead_DTO>>> GetAllUsers()
+    {
+        var users = await _userRepo.GetAllUsers();
+        var userDtos = users.Select(u => new UserRead_DTO
+        {
+            Id = u.Id,
+            Name = u.Name,
+            Email = u.Email,
+            Role = u.Role,
+            CreatedAt = u.CreatedAt
+        });
+
+        return Ok(userDtos);
+    }
+
+    //
+    // Get User By Id
+    // GET: api/users/{id}
+    //
+    [Authorize]
+    [HttpGet("{id}")]
+    public async Task<ActionResult<UserRead_DTO>> GetUserById(int id)
+    {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        var user = await _userRepo.GetUserById(id);
+        if (user == null) return NotFound(new { message = "User not found" });
+
+        var userDto = new UserRead_DTO
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Role = user.Role,
+            CreatedAt = user.CreatedAt,
+            Email = currentRole == Roles.Admin || currentUserId == id ? user.Email : null // hide email for other users
+        };
+
+        // Users can only see themselves
+        if (currentRole != Roles.Admin && currentUserId != id)
+            return Forbid();
+
+        return Ok(userDto);
+    }
+
+    //
+    // Add User
+    // POST: api/users
+    //
+    [AllowAnonymous]
+    [HttpPost]
+    public async Task<ActionResult<UserRead_DTO>> CreateUser([FromBody] UserCreate_DTO dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var user = new UserModel
+        {
+            Name = dto.Name,
+            Email = dto.Email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password), // Password Hashing using BCrypt
+            Role = dto.Role,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var createdUser = await _userRepo.AddUser(user);
+
+        var createdDto = new UserRead_DTO
+        {
+            Id = createdUser.Id,
+            Name = createdUser.Name,
+            Email = createdUser.Email,
+            Role = createdUser.Role,
+            CreatedAt = createdUser.CreatedAt
+        };
+
+        return CreatedAtAction(nameof(GetUserById), new { id = createdDto.Id }, createdDto);
+    }
+
+    //
+    // Update User
+    // PUT: api/users/{id}
+    //
+    [Authorize]
+    [HttpPut("{id}")]
+    public async Task<ActionResult<UserRead_DTO>> UpdateUser(int id, [FromBody] UserUpdate_DTO dto)
+    {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        // User can only update themselves
+        if (currentRole != "Admin" && currentUserId != id)
+            return Forbid();
+
+        var existingUser = await _userRepo.GetUserById(id);
+        if (existingUser == null) return NotFound(new { message = "User not found" });
+
+        existingUser.Name = dto.Name;
+        existingUser.Email = dto.Email;
+
+        if (currentRole == "Admin")
+            existingUser.Role = dto.Role; // only admin can change roles
+
+        var updatedUser = await _userRepo.UpdateUser(existingUser);
+
+        return Ok(new UserRead_DTO
+        {
+            Id = updatedUser.Id,
+            Name = updatedUser.Name,
+            Email = updatedUser.Email,
+            Role = updatedUser.Role,
+            CreatedAt = updatedUser.CreatedAt
+        });
+    }
+
+    //
+    // Delete User
+    // DELETE: api/users/{id}
+    //
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(int id)
+    {
+        var deleted = await _userRepo.DeleteUser(id);
+        if (!deleted) return NotFound(new { message = "User not found" });
+
+        return Ok("User Deleted");
+    }
+}
+
+public static class Roles
+{
+    public const string Admin = "Admin";
+    public const string User = "User";
+    public const string Rep = "Rep";
+}
+
+
+TicketController.cs
+using IssueTrackingAPI.DTO.TicketDTO;
+using IssueTrackingAPI.Model;
+using IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Data;
+using System.Security.Claims;
+
+namespace IssueTrackingAPI.Controllers;
+
+[ApiController]
+[Route("api/ticket")]
+[Authorize]
+public class TicketController : ControllerBase
+{
+    private readonly ITicketRepo _ticketRepo;
+
+    public TicketController(ITicketRepo ticketRepo)
+    {
+        _ticketRepo = ticketRepo;
+    }
+
+    //
+    // Get All Tickets
+    // GET: api/tickets
+    //
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<TicketRead_DTO>>> GetAllTickets()
+    {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        IEnumerable<TicketModel> tickets;
+
+        switch (currentRole)
+        {
+            case Roles.Admin:
+                tickets = await _ticketRepo.GetAllTickets();
+                break;
+            case Roles.User:
+                tickets = await _ticketRepo.GetTicketsByCreator(currentUserId); // only tickets created by user
+                break;
+            case Roles.Rep:
+                tickets = await _ticketRepo.GetTicketsByAssignee(currentUserId); // only tickets assigned to rep
+                break;
+            default:
+                return Forbid();
+        }
+
+        var ticketDtos = tickets.Select(t => new TicketRead_DTO
+        {
+            Id = t.Id,
+            Title = t.Title,
+            Description = t.Description,
+            Priority = t.Priority,
+            Type = t.Type,
+            Status = t.Status,
+            CreatedByUserId = t.CreatedByUserId,
+            AssignedToUserId = t.AssignedToUserId,
+            Comment = t.Comment,
+            CreatedAt = t.CreatedAt,
+            UpdatedAt = t.UpdatedAt
+        });
+
+        return Ok(ticketDtos);
+    }
+
+    //
+    // Get Tickets By Id
+    // GET: api/tickets/{id}
+    //
+    [HttpGet("{id}")]
+    public async Task<ActionResult<TicketRead_DTO>> GetTicketById(int id)
+    {
+        var ticket = await _ticketRepo.GetTicketById(id);
+        if (ticket == null) return NotFound(new { message = "Ticket not found" });
+
+        var ticketDto = new TicketRead_DTO
+        {
+            Id = ticket.Id,
+            Title = ticket.Title,
+            Description = ticket.Description,
+            Priority = ticket.Priority,
+            Type = ticket.Type,
+            Status = ticket.Status,
+            CreatedByUserId = ticket.CreatedByUserId,
+            AssignedToUserId = ticket.AssignedToUserId,
+            Comment = ticket.Comment,
+            CreatedAt = ticket.CreatedAt,
+            UpdatedAt = ticket.UpdatedAt
+        };
+
+        return Ok(ticketDto);
+    }
+
+    //
+    // Create Ticket
+    // POST: api/tickets
+    // 
+    [Authorize(Roles = "User,Admin")]
+    [HttpPost]
+    public async Task<ActionResult<TicketRead_DTO>> CreateTicket([FromBody] TicketCreate_DTO dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var ticket = new TicketModel
+        {
+            Title = dto.Title,
+            Description = dto.Description,
+            Priority = dto.Priority,
+            Type = dto.Type,
+            Status = "Open",
+            CreatedByUserId = dto.CreatedByUserId,
+            AssignedToUserId = dto.AssignedToUserId,
+            Comment = dto.Comment,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        var createdTicket = await _ticketRepo.AddTicket(ticket);
+
+        var ticketDto = new TicketRead_DTO
+        {
+            Id = createdTicket.Id,
+            Title = createdTicket.Title,
+            Description = createdTicket.Description,
+            Priority = createdTicket.Priority,
+            Type = createdTicket.Type,
+            Status = createdTicket.Status,
+            CreatedByUserId = createdTicket.CreatedByUserId,
+            AssignedToUserId = createdTicket.AssignedToUserId,
+            Comment = createdTicket.Comment,
+            CreatedAt = createdTicket.CreatedAt,
+            UpdatedAt = createdTicket.UpdatedAt
+        };
+
+        return CreatedAtAction(nameof(GetTicketById), new { id = ticketDto.Id }, ticketDto);
+    }
+
+    //
+    // Update Ticker
+    // PUT: api/tickets/{id}
+    //
+    [HttpPut("{id}")]
+    public async Task<ActionResult<TicketRead_DTO>> UpdateTicket(int id, [FromBody] TicketUpdate_DTO dto)
+    {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        if (id != dto.Id) return BadRequest(new { message = "Ticket ID mismatch" });
+
+        var existing = await _ticketRepo.GetTicketById(id);
+        if (existing == null) return NotFound(new { message = "Ticket not found" });
+
+        // Role restrictions
+        if (currentRole == "User" && existing.CreatedByUserId != currentUserId)
+            return Forbid();
+        if (currentRole == "Rep" && existing.AssignedToUserId != currentUserId)
+            return Forbid();
+
+        existing.Title = dto.Title;
+        existing.Description = dto.Description;
+        existing.Priority = dto.Priority;
+        existing.Type = dto.Type;
+        existing.Status = dto.Status;
+        existing.AssignedToUserId = dto.AssignedToUserId;
+        existing.Comment = dto.Comment;
+
+        var updatedTicket = await _ticketRepo.UpdateTicket(existing);
+
+        return Ok(new TicketRead_DTO
+        {
+            Id = updatedTicket.Id,
+            Title = updatedTicket.Title,
+            Description = updatedTicket.Description,
+            Priority = updatedTicket.Priority,
+            Type = updatedTicket.Type,
+            Status = updatedTicket.Status,
+            CreatedByUserId = updatedTicket.CreatedByUserId,
+            AssignedToUserId = updatedTicket.AssignedToUserId,
+            Comment = updatedTicket.Comment,
+            CreatedAt = updatedTicket.CreatedAt,
+            UpdatedAt = updatedTicket.UpdatedAt
+        });
+    }
+
+    //
+    // Delete Ticket
+    // DELETE: api/tickets/{id}
+    //
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteTicket(int id)
+    {
+        var deleted = await _ticketRepo.DeleteTicket(id);
+        if (!deleted) return NotFound(new { message = "Ticket not found" });
+
+        return NoContent();
+    }
+}
+
+
+AuthController.cs
+using IssueTrackingAPI.Model;
+using IssueTrackingAPI.Repository.UserRepo.UserRepo;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.ComponentModel.DataAnnotations;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
+namespace IssueTrackingAPI.Controllers;
+
+[ApiController]
+[Route("api/auth/")]
+public class AuthController : ControllerBase
+{
+    private readonly IConfiguration _config;
+    private readonly IUserRepo _userRepo;
+
+    public AuthController(IConfiguration config, IUserRepo userRepo)
+    {
+        _config = config;
+        _userRepo = userRepo;
+    }
+
+    [AllowAnonymous]
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        var user = await _userRepo.GetUserByEmail(request.Email);
+        if (user == null)
+            return Unauthorized(new { message = "Invalid credentials" });
+
+        bool isValid = false;
+
+        try
+        {
+            // Try bcrypt validation
+            isValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+        }
+        catch
+        {
+            // Fallback: compare plaintext (dummy data case)
+            isValid = request.Password == user.PasswordHash;
+        }
+
+        if (!isValid)
+            return Unauthorized(new { message = "Invalid credentials" });
+
+        var token = GenerateJwtToken(user);
+        return Ok(new { token });
+    }
+
+    private string GenerateJwtToken(UserModel user)
+    {
+        var jwtSettings = _config.GetSection("Jwt");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? throw new InvalidOperationException("JWT key missing")));
+
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Name),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role)
+        };
+
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var expireMinutes = double.Parse(jwtSettings["ExpireMinutes"] ?? "60"); // default 60 minutes
+        var token = new JwtSecurityToken(
+            issuer: jwtSettings["Issuer"],
+            audience: jwtSettings["Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(expireMinutes),
+            signingCredentials: creds
+        );
+
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+}
+
+public class LoginRequest
+{
+    [Required]
+    public required string Email { get; set; }
+    [Required]
+    public required string Password { get; set; }
+}
+
+
+AttachmentController.cs
+using IssueTrackingAPI.DTO.AttachmentDTO;
+using IssueTrackingAPI.Model;
+using IssueTrackingAPI.Repository.AttachmentRepo.AttachmentRepo;
+using IssueTrackingAPI.Repository.TicketRepo.TicketRepo; // ✅ Import Ticket Repo
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
+namespace IssueTrackingAPI.Controllers;
+
+[ApiController]
+[Route("api/attachment")]
+[Authorize] // Requires authorize for all calls
+public class AttachmentController : ControllerBase
+{
+    private readonly IAttachmentRepo _attachmentRepo;
+    private readonly ITicketRepo _ticketRepo;
+
+    public AttachmentController(IAttachmentRepo attachmentRepo, ITicketRepo ticketRepo)
+    {
+        _attachmentRepo = attachmentRepo;
+        _ticketRepo = ticketRepo;
+    }
+
+    // 
+    // Get All Tickets
+    // GET: /api/attachment
+    //
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<AttachmentRead_DTO>>> GetAll()
+    {
+        var attachments = await _attachmentRepo.GetAllAttachments();
+        var dtoList = attachments.Select(a => new AttachmentRead_DTO
+        {
+            Id = a.Id,
+            TicketId = a.TicketId,
+            FileName = a.FileName,
+            FileUrl = a.FileUrl,
+            UploadedAt = a.UploadedAt
+        });
+        return Ok(dtoList);
+    }
+
+    //
+    // Get Attachment By Id
+    // GET: /api/attachment/api
+    //
+    [Authorize]
+    [HttpGet("{id}")]
+    public async Task<ActionResult<AttachmentRead_DTO>> GetById(int id)
+    {
+        var attachment = await _attachmentRepo.GetAttachmentById(id);
+        if (attachment == null) return NotFound(new { message = "Attachment not found" });
+
+        return Ok(new AttachmentRead_DTO
+        {
+            Id = attachment.Id,
+            TicketId = attachment.TicketId,
+            FileName = attachment.FileName,
+            FileUrl = attachment.FileUrl,
+            UploadedAt = attachment.UploadedAt
+        });
+    }
+
+    //
+    // Create Ticket
+    // PUT: /api/attachment/{id}
+    //
+    [HttpPost]
+    public async Task<ActionResult<AttachmentRead_DTO>> Create([FromBody] AttachmentCreate_DTO dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var attachment = new AttachmentModel
+        {
+            TicketId = dto.TicketId,
+            FileName = dto.FileName,
+            FileUrl = dto.FileUrl
+        };
+
+        var created = await _attachmentRepo.AddAttachment(attachment);
+
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, new AttachmentRead_DTO
+        {
+            Id = created.Id,
+            TicketId = created.TicketId,
+            FileName = created.FileName,
+            FileUrl = created.FileUrl,
+            UploadedAt = created.UploadedAt
+        });
+    }
+
+    //
+    // Delete Ticket
+    // DELETE: /api/attachment/{id}
+    //
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        var attachment = await _attachmentRepo.GetAttachmentById(id);
+        if (attachment == null) return NotFound(new { message = "Attachment not found" });
+
+        if (currentRole != "Admin")
+        {
+            var ticket = await _ticketRepo.GetTicketById(attachment.TicketId);
+            if (ticket == null || ticket.CreatedByUserId != currentUserId)
+                return Forbid();
+        }
+
+        var deleted = await _attachmentRepo.DeleteAttachment(id);
+        if (!deleted) return NotFound(new { message = "Attachment not found" });
+
+        return NoContent();
+    }
+}
+
+
