@@ -242,6 +242,7 @@ public class TicketController : ControllerBase
     public async Task<ActionResult<TicketRead_DTO>> UpdateTicket(int id, [FromBody] TicketUpdate_DTO dto)
     {
         var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
         var currentRole = User.FindFirst(ClaimTypes.Role).Value;
 
         if (id != dto.Id) return BadRequest(new { message = "Ticket ID mismatch" });
@@ -252,6 +253,7 @@ public class TicketController : ControllerBase
         // Role restrictions
         if (currentRole == "User" && existing.CreatedByUserId != currentUserId)
             return Forbid();
+
         if (currentRole == "Rep" && existing.AssignedToUserId != null && existing.AssignedToUserId != currentUserId)
             return Forbid();
 
