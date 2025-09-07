@@ -63,6 +63,7 @@ public class AttachmentController : ControllerBase
         });
     }
 
+
     //
     // Create Ticket
     // PUT: /api/attachment/{id}
@@ -99,6 +100,7 @@ public class AttachmentController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
         var currentRole = User.FindFirst(ClaimTypes.Role).Value;
 
         var attachment = await _attachmentRepo.GetAttachmentById(id);
