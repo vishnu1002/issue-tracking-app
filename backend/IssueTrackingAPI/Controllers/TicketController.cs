@@ -1,7 +1,7 @@
 using IssueTrackingAPI.DTO.TicketDTO;
 using IssueTrackingAPI.Model;
 using IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
-using IssueTrackingAPI.Services;
+// using IssueTrackingAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -15,12 +15,10 @@ namespace IssueTrackingAPI.Controllers;
 public class TicketController : ControllerBase
 {
     private readonly ITicketRepo _ticketRepo;
-    private readonly INotificationSignalRService _notificationService;
 
-    public TicketController(ITicketRepo ticketRepo, INotificationSignalRService notificationService)
+    public TicketController(ITicketRepo ticketRepo)
     {
         _ticketRepo = ticketRepo;
-        _notificationService = notificationService;
     }
 
     //
@@ -192,29 +190,7 @@ public class TicketController : ControllerBase
 
         var createdTicket = await _ticketRepo.AddTicket(ticket);
 
-        // Send notifications (with error handling)
-        try
-        {
-            await _notificationService.SendNotificationToAdminsAsync(
-                createdTicket.Id, 
-                "TicketCreated", 
-                $"New ticket '{createdTicket.Title}' has been created");
-
-            if (createdTicket.AssignedToUserId.HasValue)
-            {
-                await _notificationService.SendNotificationAsync(
-                    createdTicket.AssignedToUserId.Value,
-                    createdTicket.Id,
-                    "TicketAssigned",
-                    $"You have been assigned to ticket '{createdTicket.Title}'");
-            }
-        }
-        catch (Exception ex)
-        {
-            // Log the error but don't fail the ticket creation
-            // In a production app, you'd want to use proper logging
-            Console.WriteLine($"Notification error: {ex.Message}");
-        }
+        // Notifications removed
 
         var ticketDto = new TicketRead_DTO
         {
@@ -307,22 +283,7 @@ public class TicketController : ControllerBase
 
         var updatedTicket = await _ticketRepo.UpdateTicket(existing);
 
-        // Send notification to ticket creator about the comment
-        try
-        {
-            if (existing.CreatedByUserId != currentUserId)
-            {
-                await _notificationService.SendNotificationAsync(
-                    existing.CreatedByUserId,
-                    existing.Id,
-                    "TicketCommented",
-                    $"A comment has been added to your ticket '{existing.Title}'");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Notification error: {ex.Message}");
-        }
+        // Notifications removed
 
         return Ok(new TicketRead_DTO
         {

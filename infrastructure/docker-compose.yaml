@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  frontend:
+    build:
+      context: ../frontend/IssueTrackingFrontend
+      dockerfile: Dockerfile
+    container_name: issue-tracking-frontend
+    ports:
+      - "4200:4200"
+    networks:
+      - appnet
+    environment:
+      - NODE_ENV=production
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: IssueTrackingAPI/Dockerfile
+    container_name: issue-tracking-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sql;Database=IssueTrackingDb;User Id=sa;Password=Your_strong_password123!;TrustServerCertificate=True;Encrypt=False;
+      - Jwt__Key=dev-placeholder-change
+      - AllowedHosts=*
+      - CORS__Origins=http://localhost:4200
+    depends_on:
+      - sql
+    networks:
+      - appnet
+
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: issue-tracking-sql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Your_strong_password123!
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+      # - ./sql-backup:/var/opt/mssql/backup
+    networks:
+      - appnet
+
+volumes:
+  mssql-data:
+
+networks:
+  appnet:
+    driver: bridge

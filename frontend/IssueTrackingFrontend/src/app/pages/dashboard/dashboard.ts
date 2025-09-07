@@ -78,9 +78,7 @@ export class Dashboard implements OnInit {
     this.ticketSuccess = null;
   }
 
-  onFileSelected(event: any) {
-    this.selectedFile = event.target.files[0];
-  }
+  // File upload removed
 
   createTicket() {
     if (!this.newTicket.title || !this.newTicket.description) {
@@ -113,10 +111,7 @@ export class Dashboard implements OnInit {
         this.creatingTicket = false;
         this.ticketSuccess = 'Ticket created successfully!';
 
-        // If file is selected, create attachment record
-        if (this.selectedFile) {
-          this.createAttachmentRecord(ticket.id);
-        }
+        // Attachment feature removed
 
         setTimeout(() => {
           this.closeCreateTicketModal();
@@ -131,24 +126,5 @@ export class Dashboard implements OnInit {
     });
   }
 
-  private createAttachmentRecord(ticketId: number) {
-    if (!this.selectedFile) return;
-
-    // Create a random file path (as requested, not storing actual file)
-    const randomPath = `attachments/${Date.now()}_${Math.random().toString(36).substring(7)}_${
-      this.selectedFile.name
-    }`;
-
-    const attachmentData = {
-      ticketId: ticketId,
-      fileName: this.selectedFile.name,
-      filePath: randomPath,
-      fileSize: this.selectedFile.size,
-      uploadedByUserId: parseInt(this.auth.getCurrentUser()?.id || '0'),
-    };
-
-    // Note: This would need an attachment service to be implemented
-    // For now, we'll just log it
-    console.log('Attachment data:', attachmentData);
-  }
+  // Attachment feature removed
 }

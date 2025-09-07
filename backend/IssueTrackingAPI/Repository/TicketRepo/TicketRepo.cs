@@ -19,7 +19,6 @@ public class TicketRepo : ITicketRepo
         return await _context.Tickets_Table
             .Include(t => t.CreatedByUser)
             .Include(t => t.AssignedToUser)
-            .Include(t => t.Attachments)
             .ToListAsync();
     }
 
@@ -28,7 +27,6 @@ public class TicketRepo : ITicketRepo
         return await _context.Tickets_Table
             .Include(t => t.CreatedByUser)
             .Include(t => t.AssignedToUser)
-            .Include(t => t.Attachments)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
@@ -44,6 +42,17 @@ public class TicketRepo : ITicketRepo
         var existing = await _context.Tickets_Table.FindAsync(ticket.Id);
         if (existing == null) return null;
 
+        // Capture previous status from database (detached) to avoid tracking side-effects
+        var previousStatus = await _context.Tickets_Table
+            .AsNoTracking()
+            .Where(t => t.Id == ticket.Id)
+            .Select(t => t.Status)
+            .FirstOrDefaultAsync();
+        if (previousStatus == null)
+        {
+            return null;
+        }
+
         existing.Title = ticket.Title;
         existing.Description = ticket.Description;
         existing.Priority = ticket.Priority;
@@ -54,13 +63,13 @@ public class TicketRepo : ITicketRepo
         existing.ResolutionNotes = ticket.ResolutionNotes;
         existing.UpdatedAt = DateTime.UtcNow;
 
-        // Handle KPI tracking
-        if (ticket.Status == "Closed" && existing.Status != "Closed")
+        // Handle KPI tracking based on transition from previousStatus -> current Status
+        if (ticket.Status == "Closed" && previousStatus != "Closed")
         {
             existing.ResolvedAt = DateTime.UtcNow;
             existing.ResolutionTime = existing.ResolvedAt.Value - existing.CreatedAt;
         }
-        else if (ticket.Status != "Closed" && existing.Status == "Closed")
+        else if (ticket.Status != "Closed" && previousStatus == "Closed")
         {
             // Ticket was reopened
             existing.ResolvedAt = null;
@@ -158,7 +167,6 @@ public class TicketRepo : ITicketRepo
             .Take(searchDto.PageSize)
             .Include(t => t.CreatedByUser)
             .Include(t => t.AssignedToUser)
-            .Include(t => t.Attachments)
             .ToListAsync();
 
         return (tickets, totalCount);

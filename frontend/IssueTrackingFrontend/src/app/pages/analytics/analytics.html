@@ -1,9 +1,9 @@
-<div class="min-h-screen bg-gray-50 py-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 pt-6 pb-2">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Analytics & KPIs</h1>
-      <p class="mt-2 text-gray-600">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Analytics & KPIs</h1>
+      <p class="mt-2 text-gray-600 dark:text-gray-300">
         Comprehensive insights into system performance and representative metrics
       </p>
     </div>
@@ -51,7 +51,10 @@
     </div>
 
     <!-- Error State -->
-    <div *ngIf="error" class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+    <div
+      *ngIf="error"
+      class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md p-4 mb-6"
+    >
       <div class="flex">
         <div class="flex-shrink-0">
           <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -63,8 +66,8 @@
           </svg>
         </div>
         <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">Error</h3>
-          <div class="mt-2 text-sm text-red-700">{{ error }}</div>
+          <h3 class="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
+          <div class="mt-2 text-sm text-red-700 dark:text-red-300">{{ error }}</div>
         </div>
       </div>
     </div>
@@ -75,7 +78,7 @@
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
     >
       <!-- Total Tickets -->
-      <div class="bg-white rounded-lg shadow p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <div class="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
@@ -95,14 +98,16 @@
             </div>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">Total Tickets</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ dashboardStats.totalTickets }}</p>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Tickets</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              {{ dashboardStats.totalTickets }}
+            </p>
           </div>
         </div>
       </div>
 
       <!-- Open Tickets -->
-      <div class="bg-white rounded-lg shadow p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <div class="w-8 h-8 bg-yellow-100 rounded-md flex items-center justify-center">
@@ -122,14 +127,16 @@
             </div>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">Open Tickets</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ dashboardStats.openTickets }}</p>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Open Tickets</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              {{ dashboardStats.openTickets }}
+            </p>
           </div>
         </div>
       </div>
 
       <!-- Closed Tickets -->
-      <div class="bg-white rounded-lg shadow p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <div class="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
@@ -149,14 +156,16 @@
             </div>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">Closed Tickets</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ dashboardStats.closedTickets }}</p>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Closed Tickets</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              {{ dashboardStats.closedTickets }}
+            </p>
           </div>
         </div>
       </div>
 
       <!-- High Priority -->
-      <div class="bg-white rounded-lg shadow p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <div class="w-8 h-8 bg-red-100 rounded-md flex items-center justify-center">
@@ -176,8 +185,8 @@
             </div>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">High Priority</p>
-            <p class="text-2xl font-semibold text-gray-900">
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">High Priority</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
               {{ dashboardStats.highPriorityTickets }}
             </p>
           </div>
@@ -191,7 +200,7 @@
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
     >
       <!-- Total Users -->
-      <div class="bg-white rounded-lg shadow p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <div class="w-8 h-8 bg-purple-100 rounded-md flex items-center justify-center">
@@ -211,14 +220,16 @@
             </div>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">Total Users</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ dashboardStats.totalUsers }}</p>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              {{ dashboardStats.totalUsers }}
+            </p>
           </div>
         </div>
       </div>
 
       <!-- Representatives -->
-      <div class="bg-white rounded-lg shadow p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <div class="w-8 h-8 bg-indigo-100 rounded-md flex items-center justify-center">
@@ -238,8 +249,8 @@
             </div>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">Representatives</p>
-            <p class="text-2xl font-semibold text-gray-900">
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Representatives</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
               {{ dashboardStats.totalRepresentatives }}
             </p>
           </div>
@@ -247,7 +258,7 @@
       </div>
 
       <!-- Average Resolution Time -->
-      <div class="bg-white rounded-lg shadow p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <div class="w-8 h-8 bg-orange-100 rounded-md flex items-center justify-center">
@@ -267,8 +278,8 @@
             </div>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">Avg Resolution Time</p>
-            <p class="text-2xl font-semibold text-gray-900">
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Resolution Time</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
               {{ formatHours(averageResolutionTime) }}
             </p>
           </div>
@@ -276,7 +287,7 @@
       </div>
 
       <!-- Total Resolved -->
-      <div class="bg-white rounded-lg shadow p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <div class="w-8 h-8 bg-emerald-100 rounded-md flex items-center justify-center">
@@ -296,75 +307,89 @@
             </div>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">Total Resolved</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ totalResolved }}</p>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Resolved</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              {{ totalResolved }}
+            </p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Representatives Performance Table -->
-    <div *ngIf="representativesKPI.length > 0 && !loading" class="bg-white rounded-lg shadow">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h2 class="text-lg font-semibold text-gray-900">Representatives Performance</h2>
-        <p class="mt-1 text-sm text-gray-600">Performance metrics for all representatives</p>
+    <div
+      *ngIf="representativesKPI.length > 0 && !loading"
+      class="bg-white dark:bg-gray-800 rounded-lg shadow mb-0"
+    >
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Representatives Performance
+        </h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          Performance metrics for all representatives
+        </p>
       </div>
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
               >
                 Representative
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
               >
                 Tickets Assigned
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
               >
                 Tickets Resolved
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
               >
                 Resolution Rate
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
               >
                 Avg Resolution Time
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr *ngFor="let rep of representativesKPI" class="hover:bg-gray-50">
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr
+              *ngFor="let rep of representativesKPI"
+              class="hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 h-10 w-10">
                     <div
                       class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center"
                     >
-                      <span class="text-sm font-medium text-gray-700">{{
+                      <span class="text-sm font-medium text-gray-700 dark:text-gray-900">{{
                         rep.representativeName.charAt(0)
                       }}</span>
                     </div>
                   </div>
                   <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900">
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {{ rep.representativeName }}
                     </div>
-                    <div class="text-sm text-gray-500">ID: {{ rep.representativeId }}</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                      ID: {{ rep.representativeId }}
+                    </div>
                   </div>
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                 {{ rep.ticketsAssigned }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                 {{ rep.ticketsResolved }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -379,7 +404,7 @@
                   {{ rep.resolutionRate.toFixed(1) }}%
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                 {{ formatHours(rep.averageResolutionTime) }}
               </td>
             </tr>
@@ -403,8 +428,12 @@
           d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
         ></path>
       </svg>
-      <h3 class="mt-2 text-sm font-medium text-gray-900">No representatives found</h3>
-      <p class="mt-1 text-sm text-gray-500">There are no representatives in the system yet.</p>
+      <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+        No representatives found
+      </h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        There are no representatives in the system yet.
+      </p>
     </div>
   </div>
 </div>
