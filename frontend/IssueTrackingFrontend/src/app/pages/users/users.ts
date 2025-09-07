@@ -75,7 +75,15 @@ export class Users implements OnInit {
         },
         error: (err) => {
           console.error('Failed to delete user:', err);
-          alert('Failed to delete user. Please try again.');
+
+          // Handle specific error messages from the backend
+          if (err.status === 400 && err.error?.message) {
+            alert(err.error.message);
+          } else if (err.status === 404) {
+            alert('User not found.');
+          } else {
+            alert('Failed to delete user. Please try again.');
+          }
         },
       });
     }

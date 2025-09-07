@@ -1,5 +1,3 @@
-import { AttachmentModel } from './attachment.model';
-
 export interface TicketModel {
   id: number;
   title: string;
@@ -12,5 +10,4 @@ export interface TicketModel {
   comment?: string;
   createdAt: string;
   updatedAt: string;
-  attachments?: AttachmentModel[];
 }

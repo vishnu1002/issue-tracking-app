@@ -1,13 +1,9 @@
 using IssueTrackingAPI.Context;
-using IssueTrackingAPI.Hubs;
 using IssueTrackingAPI.Middleware;
-using IssueTrackingAPI.Repository.AttachmentRepo.AttachmentRepo;
 using IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
 using IssueTrackingAPI.Repository.UserRepo.UserRepo;
-using IssueTrackingAPI.Repository.NotificationRepo.NotificationRepo;
 using IssueTrackingAPI.Repository.DashboardRepo.DashboardRepo;
 using IssueTrackingAPI.Repository.KPIRepo.KPIRepo;
-using IssueTrackingAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -39,18 +35,13 @@ builder.Services.AddCors(options =>
 // Service to: Repository Interface -> Repository Classes
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<ITicketRepo, TicketRepo>();
-builder.Services.AddScoped<IAttachmentRepo, AttachmentRepo>();
 
 // Service to: New Repository Classes
-builder.Services.AddScoped<INotificationRepo, NotificationRepo>();
+// Notifications removed
 builder.Services.AddScoped<IDashboardRepo, DashboardRepo>();
 builder.Services.AddScoped<IKPIRepo, KPIRepo>();
 
-// Service to: Notification SignalR Service
-builder.Services.AddScoped<INotificationSignalRService, NotificationSignalRService>();
-
-// Service to: SignalR
-builder.Services.AddSignalR();
+// SignalR notifications removed
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -120,7 +111,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<NotificationHub>("/notificationHub"); // SignalR Hub
+// app.MapHub<NotificationHub>("/notificationHub"); // Removed
 app.MapHealthChecks("/health"); // Heath Check
 
 app.Run();

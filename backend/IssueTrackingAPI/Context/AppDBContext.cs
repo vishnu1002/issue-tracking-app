@@ -12,8 +12,7 @@ public class AppDBContext : DbContext
     // Tables
     public DbSet<UserModel> Users_Table { get; set; }
     public DbSet<TicketModel> Tickets_Table { get; set; }
-    public DbSet<AttachmentModel> Attachments_Table { get; set; }
-    public DbSet<NotificationModel> Notifications_Table { get; set; }
+    // Notifications removed
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,25 +29,7 @@ public class AppDBContext : DbContext
             .HasForeignKey(t => t.AssignedToUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Ticket-Attachment relationship
-        modelBuilder.Entity<AttachmentModel>()
-            .HasOne(a => a.Ticket)
-            .WithMany(t => t.Attachments)
-            .HasForeignKey(a => a.TicketId);
-
-        // User-Notification relationship
-        modelBuilder.Entity<NotificationModel>()
-            .HasOne(n => n.User)
-            .WithMany()
-            .HasForeignKey(n => n.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // Ticket-Notification relationship
-        modelBuilder.Entity<NotificationModel>()
-            .HasOne(n => n.Ticket)
-            .WithMany()
-            .HasForeignKey(n => n.TicketId)
-            .OnDelete(DeleteBehavior.SetNull);
+        // Notifications removed
 
         base.OnModelCreating(modelBuilder);
     }

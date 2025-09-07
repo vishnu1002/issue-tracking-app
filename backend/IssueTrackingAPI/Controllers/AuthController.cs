@@ -41,10 +41,7 @@ public class AuthController : ControllerBase
             Role = "User" // Default role for new registrations
         };
 
-        var createdUser = await _userRepo.CreateUser(user);
-        if (createdUser == null)
-            return BadRequest(new { message = "Failed to create user" });
-
+        var createdUser = await _userRepo.AddUser(user);
         return Ok(new { message = "User created successfully" });
     }
 

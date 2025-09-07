@@ -41,6 +41,5 @@ public class TicketModel
     public TimeSpan? ResolutionTime { get; set; } // Calculated resolution time
     public string? ResolutionNotes { get; set; } // Notes about resolution
 
-    // Navigation properties
-    public ICollection<AttachmentModel> Attachments { get; set; }
+    // Navigation properties (attachments removed)
 }

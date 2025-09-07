@@ -1,7 +1,7 @@
 using IssueTrackingAPI.DTO.TicketDTO;
 using IssueTrackingAPI.Model;
 using IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
-using IssueTrackingAPI.Services;
+// using IssueTrackingAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -15,12 +15,10 @@ namespace IssueTrackingAPI.Controllers;
 public class TicketController : ControllerBase
 {
     private readonly ITicketRepo _ticketRepo;
-    private readonly INotificationSignalRService _notificationService;
 
-    public TicketController(ITicketRepo ticketRepo, INotificationSignalRService notificationService)
+    public TicketController(ITicketRepo ticketRepo)
     {
         _ticketRepo = ticketRepo;
-        _notificationService = notificationService;
     }
 
     //
@@ -192,29 +190,7 @@ public class TicketController : ControllerBase
 
         var createdTicket = await _ticketRepo.AddTicket(ticket);
 
-        // Send notifications (with error handling)
-        try
-        {
-            await _notificationService.SendNotificationToAdminsAsync(
-                createdTicket.Id, 
-                "TicketCreated", 
-                $"New ticket '{createdTicket.Title}' has been created");
-
-            if (createdTicket.AssignedToUserId.HasValue)
-            {
-                await _notificationService.SendNotificationAsync(
-                    createdTicket.AssignedToUserId.Value,
-                    createdTicket.Id,
-                    "TicketAssigned",
-                    $"You have been assigned to ticket '{createdTicket.Title}'");
-            }
-        }
-        catch (Exception ex)
-        {
-            // Log the error but don't fail the ticket creation
-            // In a production app, you'd want to use proper logging
-            Console.WriteLine($"Notification error: {ex.Message}");
-        }
+        // Notifications removed
 
         var ticketDto = new TicketRead_DTO
         {
@@ -285,6 +261,47 @@ public class TicketController : ControllerBase
     }
 
     //
+    // Update Ticket Comment
+    // PUT: api/ticket/{id}/comment
+    //
+    [HttpPut("{id}/comment")]
+    [Authorize(Roles = "Rep,Admin")]
+    public async Task<ActionResult<TicketRead_DTO>> UpdateTicketComment(int id, [FromBody] UpdateCommentRequest request)
+    {
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        var existing = await _ticketRepo.GetTicketById(id);
+        if (existing == null) return NotFound(new { message = "Ticket not found" });
+
+        // Role restrictions - Reps can comment on tickets assigned to them OR unassigned tickets
+        if (currentRole == "Rep" && existing.AssignedToUserId != null && existing.AssignedToUserId != currentUserId)
+            return StatusCode(403, new { message = "You can only comment on tickets assigned to you or unassigned tickets" });
+
+        existing.Comment = request.Comment;
+        existing.UpdatedAt = DateTime.UtcNow;
+
+        var updatedTicket = await _ticketRepo.UpdateTicket(existing);
+
+        // Notifications removed
+
+        return Ok(new TicketRead_DTO
+        {
+            Id = updatedTicket.Id,
+            Title = updatedTicket.Title,
+            Description = updatedTicket.Description,
+            Priority = updatedTicket.Priority,
+            Type = updatedTicket.Type,
+            Status = updatedTicket.Status,
+            CreatedByUserId = updatedTicket.CreatedByUserId,
+            AssignedToUserId = updatedTicket.AssignedToUserId,
+            Comment = updatedTicket.Comment,
+            CreatedAt = updatedTicket.CreatedAt,
+            UpdatedAt = updatedTicket.UpdatedAt
+        });
+    }
+
+    //
     // Delete Ticket
     // DELETE: api/tickets/{id}
     //
@@ -297,4 +314,10 @@ public class TicketController : ControllerBase
 
         return NoContent();
     }
+}
+
+// Request model for comment updates
+public class UpdateCommentRequest
+{
+    public string? Comment { get; set; }
 }

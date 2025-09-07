@@ -11,4 +11,5 @@ public interface IUserRepo
     Task<UserModel> AddUser(UserModel user);
     Task<UserModel?> UpdateUser(UserModel user);
     Task<bool> DeleteUser(int id);
+    Task<bool> DeleteUserWithReassignment(int id, int? reassignToUserId = null);
 }

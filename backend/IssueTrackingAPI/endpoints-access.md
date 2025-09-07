@@ -34,14 +34,15 @@ This document lists all available API endpoints with their role-based access con
 
 ## 🎫 Ticket Management Endpoints
 
-| Method | Endpoint             | Access            | Description                             |
-| ------ | -------------------- | ----------------- | --------------------------------------- |
-| GET    | `/api/ticket`        | **Authenticated** | Get tickets (role-based filtering)      |
-| GET    | `/api/ticket/search` | **Authenticated** | Search tickets with filters             |
-| GET    | `/api/ticket/{id}`   | **Authenticated** | Get ticket by ID                        |
-| POST   | `/api/ticket`        | **User, Admin**   | Create new ticket                       |
-| PUT    | `/api/ticket/{id}`   | **Authenticated** | Update ticket (role-based restrictions) |
-| DELETE | `/api/ticket/{id}`   | **Admin Only**    | Delete ticket                           |
+| Method | Endpoint                   | Access            | Description                                                    |
+| ------ | -------------------------- | ----------------- | -------------------------------------------------------------- |
+| GET    | `/api/ticket`              | **Authenticated** | Get tickets (role-based filtering)                             |
+| GET    | `/api/ticket/search`       | **Authenticated** | Search tickets with filters                                    |
+| GET    | `/api/ticket/{id}`         | **Authenticated** | Get ticket by ID                                               |
+| POST   | `/api/ticket`              | **User, Admin**   | Create new ticket                                              |
+| PUT    | `/api/ticket/{id}`         | **Authenticated** | Update ticket (role-based restrictions)                        |
+| PUT    | `/api/ticket/{id}/comment` | **Rep, Admin**    | Update ticket comment (Reps on assigned or unassigned tickets) |
+| DELETE | `/api/ticket/{id}`         | **Admin Only**    | Delete ticket                                                  |
 
 ### Role-Based Ticket Access:
 
@@ -54,6 +55,13 @@ This document lists all available API endpoints with their role-based access con
 - **User**: Can only update tickets they created
 - **Rep**: Can update tickets assigned to them + unassigned tickets
 - **Admin**: Can update any ticket
+
+### Comment Functionality:
+
+- **Rep**: Can add/edit comments on tickets assigned to them OR unassigned tickets
+- **Admin**: Can add/edit comments on any ticket
+- **User**: Can view comments on their tickets (read-only)
+- Comments trigger notifications to ticket creators
 
 ---
 
