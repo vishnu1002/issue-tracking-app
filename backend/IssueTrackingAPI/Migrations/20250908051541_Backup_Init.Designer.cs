@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IssueTrackingAPI.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20250906082037_InitialCreateWithAllFeatures")]
-    partial class InitialCreateWithAllFeatures
+    [Migration("20250908051541_Backup_Init")]
+    partial class Backup_Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,75 +24,6 @@ namespace IssueTrackingAPI.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("IssueTrackingAPI.Model.AttachmentModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("FileUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TicketId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TicketId");
-
-                    b.ToTable("Attachments_Table");
-                });
-
-            modelBuilder.Entity("IssueTrackingAPI.Model.NotificationModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int?>("TicketId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TicketId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notifications_Table");
-                });
 
             modelBuilder.Entity("IssueTrackingAPI.Model.TicketModel", b =>
                 {
@@ -106,7 +37,6 @@ namespace IssueTrackingAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Comment")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -191,35 +121,6 @@ namespace IssueTrackingAPI.Migrations
                     b.ToTable("Users_Table");
                 });
 
-            modelBuilder.Entity("IssueTrackingAPI.Model.AttachmentModel", b =>
-                {
-                    b.HasOne("IssueTrackingAPI.Model.TicketModel", "Ticket")
-                        .WithMany("Attachments")
-                        .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Ticket");
-                });
-
-            modelBuilder.Entity("IssueTrackingAPI.Model.NotificationModel", b =>
-                {
-                    b.HasOne("IssueTrackingAPI.Model.TicketModel", "Ticket")
-                        .WithMany()
-                        .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("IssueTrackingAPI.Model.UserModel", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Ticket");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("IssueTrackingAPI.Model.TicketModel", b =>
                 {
                     b.HasOne("IssueTrackingAPI.Model.UserModel", "AssignedToUser")
@@ -236,11 +137,6 @@ namespace IssueTrackingAPI.Migrations
                     b.Navigation("AssignedToUser");
 
                     b.Navigation("CreatedByUser");
-                });
-
-            modelBuilder.Entity("IssueTrackingAPI.Model.TicketModel", b =>
-                {
-                    b.Navigation("Attachments");
                 });
 
             modelBuilder.Entity("IssueTrackingAPI.Model.UserModel", b =>

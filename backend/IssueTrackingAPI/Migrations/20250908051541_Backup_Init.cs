@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace IssueTrackingAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreateWithAllFeatures : Migration
+    public partial class Backup_Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -41,7 +41,7 @@ namespace IssueTrackingAPI.Migrations
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "int", nullable: false),
                     AssignedToUserId = table.Column<int>(type: "int", nullable: true),
-                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ResolvedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -65,73 +65,6 @@ namespace IssueTrackingAPI.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Attachments_Table",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    TicketId = table.Column<int>(type: "int", nullable: false),
-                    FileName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    FileUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Attachments_Table", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Attachments_Table_Tickets_Table_TicketId",
-                        column: x => x.TicketId,
-                        principalTable: "Tickets_Table",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Notifications_Table",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    TicketId = table.Column<int>(type: "int", nullable: true),
-                    Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Message = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    IsRead = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notifications_Table", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Notifications_Table_Tickets_Table_TicketId",
-                        column: x => x.TicketId,
-                        principalTable: "Tickets_Table",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_Notifications_Table_Users_Table_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users_Table",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Attachments_Table_TicketId",
-                table: "Attachments_Table",
-                column: "TicketId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_Table_TicketId",
-                table: "Notifications_Table",
-                column: "TicketId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_Table_UserId",
-                table: "Notifications_Table",
-                column: "UserId");
-
             migrationBuilder.CreateIndex(
                 name: "IX_Tickets_Table_AssignedToUserId",
                 table: "Tickets_Table",
@@ -146,12 +79,6 @@ namespace IssueTrackingAPI.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Attachments_Table");
-
-            migrationBuilder.DropTable(
-                name: "Notifications_Table");
-
             migrationBuilder.DropTable(
                 name: "Tickets_Table");
 

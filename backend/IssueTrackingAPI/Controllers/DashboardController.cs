@@ -22,11 +22,11 @@ public class DashboardController : ControllerBase
     // GET: api/dashboard/stats
     //
     [HttpGet("stats")]
-    public async Task<ActionResult<DashboardStats_DTO>> GetDashboardStats()
+    public async Task<ActionResult<DashboardStats_DTO>> GetDashboardStats([FromQuery] string? fromDate = null, [FromQuery] string? toDate = null)
     {
         try
         {
-            var stats = await _dashboardRepo.GetDashboardStatsAsync();
+            var stats = await _dashboardRepo.GetDashboardStatsAsync(fromDate, toDate);
             return Ok(stats);
         }
         catch (Exception ex)

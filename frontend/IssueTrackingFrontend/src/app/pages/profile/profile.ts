@@ -1,4 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
@@ -15,6 +16,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 export class Profile implements OnInit {
   auth = inject(AuthService);
   userService = inject(UserService);
+  router = inject(Router);
 
   user = toSignal(this.auth.user$, { initialValue: null });
 
@@ -27,7 +29,6 @@ export class Profile implements OnInit {
   passwordData = {
     currentPassword: '',
     newPassword: '',
-    confirmPassword: '',
   };
 
   updating = false;
@@ -106,17 +107,8 @@ export class Profile implements OnInit {
   }
 
   updatePassword() {
-    if (
-      !this.passwordData.currentPassword ||
-      !this.passwordData.newPassword ||
-      !this.passwordData.confirmPassword
-    ) {
+    if (!this.passwordData.currentPassword || !this.passwordData.newPassword) {
       this.error = 'Please fill in all password fields';
-      return;
-    }
-
-    if (this.passwordData.newPassword !== this.passwordData.confirmPassword) {
-      this.error = 'New passwords do not match';
       return;
     }
 
@@ -149,7 +141,6 @@ export class Profile implements OnInit {
           this.passwordData = {
             currentPassword: '',
             newPassword: '',
-            confirmPassword: '',
           };
           setTimeout(() => {
             this.success = null;
@@ -168,10 +159,14 @@ export class Profile implements OnInit {
     this.passwordData = {
       currentPassword: '',
       newPassword: '',
-      confirmPassword: '',
     };
     this.error = null;
     this.success = null;
+  }
+
+  logout() {
+    this.auth.logout();
+    this.router.navigate(['/login']);
   }
 
   togglePasswordVisibility(field: string) {
