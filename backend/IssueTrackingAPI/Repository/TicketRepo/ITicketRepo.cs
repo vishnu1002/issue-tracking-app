@@ -16,5 +16,10 @@ public interface ITicketRepo
     Task<IEnumerable<TicketModel>> GetUnassignedTickets();
     Task<(IEnumerable<TicketModel> tickets, int totalCount)> SearchTickets(TicketSearch_DTO searchDto);
 
+    // Attachments
+    Task<AttachmentModel?> AddAttachment(AttachmentModel attachment);
+    Task<IEnumerable<AttachmentModel>> GetAttachmentsByTicket(int ticketId);
+    Task<AttachmentModel?> GetAttachmentById(int attachmentId);
+    Task<bool> DeleteAttachment(int attachmentId);
 }
 

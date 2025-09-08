@@ -33,8 +33,8 @@ public class TicketModel
 
     public string? Comment { get; set; } // Comment
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Ticket Created Date Time
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow; // Ticket Updated Date Time
+    public DateTime CreatedAt { get; set; } = IssueTrackingAPI.Context.TimeHelper.NowIst(); // Ticket Created Date Time
+    public DateTime UpdatedAt { get; set; } = IssueTrackingAPI.Context.TimeHelper.NowIst(); // Ticket Updated Date Time
 
     // KPI Fields
     public DateTime? ResolvedAt { get; set; } // When ticket was marked as resolved
@@ -42,4 +42,5 @@ public class TicketModel
     public string? ResolutionNotes { get; set; } // Notes about resolution
 
     // Navigation properties (attachments removed)
+    public ICollection<AttachmentModel> Attachments { get; set; } = new List<AttachmentModel>();
 }

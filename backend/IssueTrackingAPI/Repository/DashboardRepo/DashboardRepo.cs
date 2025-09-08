@@ -60,7 +60,7 @@ public class DashboardRepo : IDashboardRepo
     // Get Ticket Trends
     public async Task<List<TicketTrend_DTO>> GetTicketTrendsAsync(int days = 30)
     {
-        var startDate = DateTime.UtcNow.AddDays(-days);
+        var startDate = IssueTrackingAPI.Context.TimeHelper.NowIst().AddDays(-days);
         var trends = new List<TicketTrend_DTO>();
         
         for (int i = 0; i < days; i++)
@@ -73,8 +73,8 @@ public class DashboardRepo : IDashboardRepo
                 
             var resolved = await _context.Tickets_Table
                 .CountAsync(t => t.Status == "Closed" && 
-                               t.UpdatedAt >= date && 
-                               t.UpdatedAt < nextDate);
+                               t.UpdatedAt >= date.Date && 
+                               t.UpdatedAt < nextDate.Date);
             
             trends.Add(new TicketTrend_DTO
             {
@@ -109,7 +109,7 @@ public class DashboardRepo : IDashboardRepo
                 : 0;
 
             var avgResolutionTime = resolvedTickets.Any()
-                ? resolvedTickets.Average(t => (t.UpdatedAt - t.CreatedAt).TotalHours)
+                ? resolvedTickets.Where(t => t.ResolutionTime.HasValue).Average(t => t.ResolutionTime!.Value.TotalHours)
                 : 0;
 
             performance.Add(new RepresentativePerformance_DTO
@@ -201,7 +201,7 @@ public class DashboardRepo : IDashboardRepo
     // Get Recent Tickets Count
     public async Task<int> GetRecentTicketsCountAsync(int days = 7)
     {
-        var dateFrom = DateTime.UtcNow.AddDays(-days);
+        var dateFrom = IssueTrackingAPI.Context.TimeHelper.NowIst().AddDays(-days).Date;
         return await _context.Tickets_Table.CountAsync(t => t.CreatedAt >= dateFrom);
     }
 
@@ -211,18 +211,18 @@ public class DashboardRepo : IDashboardRepo
         var query = _context.Tickets_Table.Where(t => t.Status == "Closed");
         
         if (fromDate.HasValue)
-            query = query.Where(t => t.CreatedAt >= fromDate.Value);
+            query = query.Where(t => t.CreatedAt >= fromDate.Value.Date);
             
         if (toDate.HasValue)
-            query = query.Where(t => t.CreatedAt <= toDate.Value);
+            query = query.Where(t => t.CreatedAt <= toDate.Value.Date);
             
         var closedTickets = await query.ToListAsync();
 
         if (!closedTickets.Any()) return 0;
 
         return closedTickets
-            .Where(t => t.UpdatedAt > t.CreatedAt)
-            .Average(t => (t.UpdatedAt - t.CreatedAt).TotalHours);
+            .Where(t => t.ResolutionTime.HasValue)
+            .Average(t => t.ResolutionTime!.Value.TotalHours);
     }
 
     // Get Average Resolution Time (overload without date filtering)
@@ -235,7 +235,7 @@ public class DashboardRepo : IDashboardRepo
         if (!closedTickets.Any()) return 0;
 
         return closedTickets
-            .Where(t => t.UpdatedAt > t.CreatedAt)
-            .Average(t => (t.UpdatedAt - t.CreatedAt).TotalHours);
+            .Where(t => t.ResolutionTime.HasValue)
+            .Average(t => t.ResolutionTime!.Value.TotalHours);
     }
 }

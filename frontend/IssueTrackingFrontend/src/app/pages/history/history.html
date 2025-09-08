@@ -94,10 +94,10 @@
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-              {{ ticket.createdAt | date : 'short' }}
+              {{ ticket.createdAt | date : 'dd/MM/yyyy' }} {{ ticket.createdAt | date : 'HH:mm' }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-              {{ ticket.updatedAt | date : 'short' }}
+              {{ ticket.updatedAt | date : 'dd/MM/yyyy' }} {{ ticket.updatedAt | date : 'HH:mm' }}
             </td>
           </tr>
         </tbody>

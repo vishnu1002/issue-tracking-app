@@ -141,8 +141,43 @@
             <label class="block text-sm font-medium text-gray-300 mb-1"
               >Attach File (Optional)</label
             >
-            <!-- File upload removed -->
-            <p class="text-xs text-gray-400 mt-1">Select a file to attach to this ticket</p>
+            <input
+              id="ticketFile"
+              type="file"
+              (change)="onFileSelected($event)"
+              accept="image/*,application/pdf,text/plain"
+              class="hidden"
+            />
+            <div class="flex flex-col items-center gap-2">
+              <label
+                for="ticketFile"
+                class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md cursor-pointer transition-colors"
+              >
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15.172 7l-6.414 6.414a2 2 0 102.828 2.828L18 9.828M16 5l3 3"
+                  />
+                </svg>
+                Choose File
+              </label>
+              <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-400 truncate max-w-[16rem]">{{
+                  selectedFile?.name || 'No file selected'
+                }}</span>
+                <button
+                  type="button"
+                  *ngIf="selectedFile"
+                  (click)="selectedFile = null"
+                  class="text-xs text-gray-300 hover:text-gray-100 px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded-md cursor-pointer"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+            <p class="text-xs text-gray-400 mt-1 text-center">Images, PDF or TXT up to ~25MB</p>
           </div>
 
           <!-- Error Message -->
