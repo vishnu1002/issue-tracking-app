@@ -62,14 +62,14 @@ public class TicketRepo : ITicketRepo
         existing.AssignedToUserId = ticket.AssignedToUserId;
         existing.Comment = ticket.Comment;
         existing.ResolutionNotes = ticket.ResolutionNotes;
-        existing.UpdatedAt = DateTime.UtcNow;
+        existing.UpdatedAt = IssueTrackingAPI.Context.TimeHelper.NowIst();
 
         // Handle KPI tracking based on transition from previousStatus -> current Status
         if (string.Equals(existing.Status, "Closed", StringComparison.OrdinalIgnoreCase)
             && !string.Equals(previousStatus, "Closed", StringComparison.OrdinalIgnoreCase))
         {
             // If already resolved earlier, keep that timestamp; otherwise set now
-            existing.ResolvedAt = existing.ResolvedAt ?? DateTime.UtcNow;
+            existing.ResolvedAt = existing.ResolvedAt ?? IssueTrackingAPI.Context.TimeHelper.NowIst();
             // If ResolutionTime already recorded, keep it. Otherwise compute and clamp.
             if (!existing.ResolutionTime.HasValue)
             {

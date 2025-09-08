@@ -17,6 +17,7 @@ public class AppDBContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Ensure SQL defaults are not used for DateTime columns; values will be set in C# using IST helper
         // User-Ticket relationships
         modelBuilder.Entity<TicketModel>()
             .HasOne(t => t.CreatedByUser)           // Each ticket must have 1 user
@@ -42,5 +43,27 @@ public class AppDBContext : DbContext
         // Keep ResolutionTime as SQL TIME; overflow is clamped in repository logic
 
         base.OnModelCreating(modelBuilder);
+    }
+}
+
+public static class TimeHelper
+{
+    private static readonly TimeZoneInfo IndiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+
+    public static DateTime UtcNow() => DateTime.UtcNow;
+
+    public static DateTime NowIst()
+    {
+        return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, IndiaTimeZone);
+    }
+
+    public static DateTime ConvertUtcToIst(DateTime utc)
+    {
+        return TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), IndiaTimeZone);
+    }
+
+    public static DateTime ConvertToUtcFromIst(DateTime ist)
+    {
+        return TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(ist, DateTimeKind.Unspecified), IndiaTimeZone);
     }
 }

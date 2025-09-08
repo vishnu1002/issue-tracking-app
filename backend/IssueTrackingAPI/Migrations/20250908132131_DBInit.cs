@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace IssueTrackingAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class Backup_Init : Migration
+    public partial class DBInit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -65,6 +65,37 @@ namespace IssueTrackingAPI.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Attachments_Table",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StoredFileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ContentType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FileSizeBytes = table.Column<long>(type: "bigint", nullable: false),
+                    FilePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UploadedByUserId = table.Column<int>(type: "int", nullable: false),
+                    TicketId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Attachments_Table", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Attachments_Table_Tickets_Table_TicketId",
+                        column: x => x.TicketId,
+                        principalTable: "Tickets_Table",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Attachments_Table_TicketId",
+                table: "Attachments_Table",
+                column: "TicketId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Tickets_Table_AssignedToUserId",
                 table: "Tickets_Table",
@@ -79,6 +110,9 @@ namespace IssueTrackingAPI.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Attachments_Table");
+
             migrationBuilder.DropTable(
                 name: "Tickets_Table");
 

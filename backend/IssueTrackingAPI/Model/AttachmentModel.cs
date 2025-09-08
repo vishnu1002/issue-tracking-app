@@ -21,7 +21,7 @@ public class AttachmentModel
     [Required]
     public required string FilePath { get; set; }
 
-    public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UploadedAt { get; set; } = IssueTrackingAPI.Context.TimeHelper.NowIst();
 
     public int UploadedByUserId { get; set; }
 

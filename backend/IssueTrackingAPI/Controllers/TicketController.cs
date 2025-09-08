@@ -64,6 +64,7 @@ public class TicketController : ControllerBase
             Type = t.Type,
             Status = t.Status,
             CreatedByUserId = t.CreatedByUserId,
+            CreatedByUserEmail = t.CreatedByUser?.Email,
             AssignedToUserId = t.AssignedToUserId,
             Comment = t.Comment,
             CreatedAt = t.CreatedAt,
@@ -159,6 +160,7 @@ public class TicketController : ControllerBase
             Type = ticket.Type,
             Status = ticket.Status,
             CreatedByUserId = ticket.CreatedByUserId,
+            CreatedByUserEmail = ticket.CreatedByUser?.Email,
             AssignedToUserId = ticket.AssignedToUserId,
             Comment = ticket.Comment,
             CreatedAt = ticket.CreatedAt,
@@ -188,8 +190,8 @@ public class TicketController : ControllerBase
             CreatedByUserId = dto.CreatedByUserId,
             AssignedToUserId = dto.AssignedToUserId,
             Comment = dto.Comment ?? string.Empty,
-            CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time")),
-            UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"))
+            CreatedAt = IssueTrackingAPI.Context.TimeHelper.NowIst(),
+            UpdatedAt = IssueTrackingAPI.Context.TimeHelper.NowIst()
         };
 
         var createdTicket = await _ticketRepo.AddTicket(ticket);
@@ -205,6 +207,7 @@ public class TicketController : ControllerBase
             Type = createdTicket.Type,
             Status = createdTicket.Status,
             CreatedByUserId = createdTicket.CreatedByUserId,
+            CreatedByUserEmail = createdTicket.CreatedByUser?.Email,
             AssignedToUserId = createdTicket.AssignedToUserId,
             Comment = createdTicket.Comment,
             CreatedAt = createdTicket.CreatedAt,
@@ -260,6 +263,7 @@ public class TicketController : ControllerBase
                 Type = updatedTicket.Type,
                 Status = updatedTicket.Status,
                 CreatedByUserId = updatedTicket.CreatedByUserId,
+                CreatedByUserEmail = updatedTicket.CreatedByUser?.Email,
                 AssignedToUserId = updatedTicket.AssignedToUserId,
                 Comment = updatedTicket.Comment,
                 CreatedAt = updatedTicket.CreatedAt,
@@ -305,7 +309,7 @@ public class TicketController : ControllerBase
             return StatusCode(403, new { message = "You can only comment on tickets assigned to you or unassigned tickets" });
 
         existing.Comment = request.Comment;
-        existing.UpdatedAt = DateTime.UtcNow;
+        existing.UpdatedAt = IssueTrackingAPI.Context.TimeHelper.NowIst();
 
         var updatedTicket = await _ticketRepo.UpdateTicket(existing);
 
@@ -388,7 +392,7 @@ public class TicketController : ControllerBase
             FilePath = savePath,
             TicketId = ticketId,
             UploadedByUserId = currentUserId,
-            UploadedAt = DateTime.UtcNow
+            UploadedAt = IssueTrackingAPI.Context.TimeHelper.NowIst()
         };
 
         await _ticketRepo.AddAttachment(attachment);

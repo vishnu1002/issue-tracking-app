@@ -61,15 +61,17 @@ export class Tickets implements OnInit {
 
   applyFilters() {
     this.filteredTickets = this.tickets.filter((ticket) => {
+      const q = this.searchTerm.trim().toLowerCase();
       const matchesSearch =
-        !this.searchTerm ||
-        ticket.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        ticket.description.toLowerCase().includes(this.searchTerm.toLowerCase());
+        !q ||
+        String(ticket.id) === q.replace(/^#/, '') ||
+        ticket.title.toLowerCase().includes(q) ||
+        ticket.description.toLowerCase().includes(q);
 
+      const statusVal = this.getStatusDisplay(ticket.status).toLowerCase();
+      const filterVal = (this.statusFilter || '').toLowerCase().replace('_', ' ');
       const matchesStatus =
-        !this.statusFilter ||
-        ticket.status.toLowerCase() === this.statusFilter.toLowerCase() ||
-        this.getStatusDisplay(ticket.status).toLowerCase() === this.statusFilter.toLowerCase();
+        !filterVal || statusVal === filterVal || ticket.status.toLowerCase() === filterVal;
       const matchesPriority = !this.priorityFilter || ticket.priority === this.priorityFilter;
       const matchesType = !this.typeFilter || ticket.type === this.typeFilter;
 

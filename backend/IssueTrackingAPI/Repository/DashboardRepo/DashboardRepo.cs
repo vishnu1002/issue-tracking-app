@@ -60,7 +60,7 @@ public class DashboardRepo : IDashboardRepo
     // Get Ticket Trends
     public async Task<List<TicketTrend_DTO>> GetTicketTrendsAsync(int days = 30)
     {
-        var startDate = DateTime.UtcNow.AddDays(-days);
+        var startDate = IssueTrackingAPI.Context.TimeHelper.NowIst().AddDays(-days);
         var trends = new List<TicketTrend_DTO>();
         
         for (int i = 0; i < days; i++)
@@ -201,7 +201,7 @@ public class DashboardRepo : IDashboardRepo
     // Get Recent Tickets Count
     public async Task<int> GetRecentTicketsCountAsync(int days = 7)
     {
-        var dateFrom = DateTime.UtcNow.AddDays(-days).Date;
+        var dateFrom = IssueTrackingAPI.Context.TimeHelper.NowIst().AddDays(-days).Date;
         return await _context.Tickets_Table.CountAsync(t => t.CreatedAt >= dateFrom);
     }
 

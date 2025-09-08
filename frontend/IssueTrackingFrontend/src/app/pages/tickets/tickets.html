@@ -102,7 +102,7 @@
       class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 hover:border-gray-600 transition-colors"
     >
       <div class="flex justify-between items-start mb-3">
-        <h3 class="text-lg font-semibold text-white">{{ ticket.title }}</h3>
+        <h3 class="text-lg font-semibold text-white">#{{ ticket.id }} · {{ ticket.title }}</h3>
         <div class="flex items-center gap-2">
           <span
             class="px-3 py-1 text-xs font-medium rounded-full"
@@ -121,6 +121,9 @@
       </div>
 
       <p class="text-gray-300 text-sm mb-4 leading-relaxed">{{ ticket.description }}</p>
+      <!-- <div class="text-xs text-gray-400 mb-3" *ngIf="ticket.createdByUserEmail">
+        <span>Created by: {{ ticket.createdByUserEmail }}</span>
+      </div> -->
 
       <div class="flex flex-wrap gap-4 text-xs text-gray-400 mb-4">
         <span class="flex items-center">
@@ -173,9 +176,19 @@
               <a
                 [href]="getAttachmentUrl(att.id)"
                 target="_blank"
-                class="text-indigo-400 hover:text-indigo-300 text-sm"
-                >Download</a
+                class="inline-flex items-center px-2 py-1 text-xs font-medium text-indigo-200 bg-indigo-900/40 hover:bg-indigo-900/60 border border-indigo-800/60 rounded-md transition-colors cursor-pointer"
+                title="Download"
               >
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"
+                  />
+                </svg>
+                Download
+              </a>
             </li>
           </ul>
         </ng-container>
@@ -215,7 +228,7 @@
           <div *ngIf="!editingComment[ticket.id] && !ticket.comment">
             <button
               (click)="startEditingComment(ticket)"
-              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors cursor-pointer"
+              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors cursor-pointer"
             >
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -253,6 +266,8 @@
             </div>
           </div>
         </div>
+
+        <hr class="border-gray-600 my-3" />
 
         <!-- Status Update Buttons -->
         <div class="flex gap-2">

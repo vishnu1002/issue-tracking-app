@@ -62,7 +62,7 @@ public class AttachmentController : ControllerBase
             FilePath = savePath,
             TicketId = ticketId,
             UploadedByUserId = currentUserId,
-            UploadedAt = DateTime.UtcNow
+            UploadedAt = IssueTrackingAPI.Context.TimeHelper.NowIst()
         };
 
         await _ticketRepo.AddAttachment(attachment);

@@ -108,7 +108,7 @@ public class UserController : ControllerBase
             Email = dto.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password), // Password Hashing using BCrypt
             Role = dto.Role,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = IssueTrackingAPI.Context.TimeHelper.NowIst()
         };
 
         var createdUser = await _userRepo.AddUser(user);

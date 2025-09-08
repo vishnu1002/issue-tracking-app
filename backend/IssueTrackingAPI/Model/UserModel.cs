@@ -19,7 +19,7 @@ public class UserModel
     [Required]
     public required string Role { get; set; } // ["User", "Representative", "Admin"]
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = IssueTrackingAPI.Context.TimeHelper.NowIst();
 
     // Navigation properties
     public ICollection<TicketModel> CreatedTickets { get; set; } = new List<TicketModel>();

@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../core/services/user.service';
+import { TicketService } from '../../core/services/ticket.service';
 import { UserModel } from '../../models/user.model';
 
 @Component({
@@ -13,11 +14,15 @@ import { UserModel } from '../../models/user.model';
 })
 export class Users implements OnInit {
   private userService = inject(UserService);
+  private ticketService = inject(TicketService);
 
   users: UserModel[] = [];
   filteredUsers: UserModel[] = [];
   loading = false;
   error: string | null = null;
+
+  // Map of userId -> created ticket count
+  ticketCounts: Record<string, number> = {};
 
   // Search properties
   searchTerm = '';
@@ -34,8 +39,25 @@ export class Users implements OnInit {
     this.userService.getAllUsers().subscribe({
       next: (users) => {
         this.users = users;
-        this.applyFilters();
-        this.loading = false;
+        // As Admin, fetch all tickets to compute counts per creator
+        this.ticketService.getAllTickets().subscribe({
+          next: (tickets) => {
+            const counts: Record<string, number> = {};
+            for (const t of tickets) {
+              const key = String(t.createdByUserId);
+              counts[key] = (counts[key] || 0) + 1;
+            }
+            this.ticketCounts = counts;
+            this.applyFilters();
+            this.loading = false;
+          },
+          error: () => {
+            // If ticket loading fails, proceed without counts
+            this.ticketCounts = {};
+            this.applyFilters();
+            this.loading = false;
+          },
+        });
       },
       error: (err) => {
         this.error = err.error?.message || 'Failed to load users';

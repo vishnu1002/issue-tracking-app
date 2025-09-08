@@ -80,7 +80,7 @@ namespace IssueTrackingAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("date");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedByUserId")
                         .HasColumnType("int");
@@ -100,7 +100,7 @@ namespace IssueTrackingAPI.Migrations
                         .HasColumnType("time");
 
                     b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("date");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -116,7 +116,7 @@ namespace IssueTrackingAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("date");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

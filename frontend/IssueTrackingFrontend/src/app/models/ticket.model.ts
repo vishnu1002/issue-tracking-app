@@ -6,6 +6,7 @@ export interface TicketModel {
   type: 'Software' | 'Hardware';
   status: string;
   createdByUserId: number;
+  createdByUserEmail?: string;
   assignedToUserId?: number;
   comment?: string;
   createdAt: string;

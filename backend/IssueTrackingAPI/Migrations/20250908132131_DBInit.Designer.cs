@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IssueTrackingAPI.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20250908101823_Column_Updted")]
-    partial class Column_Updted
+    [Migration("20250908132131_DBInit")]
+    partial class DBInit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -83,7 +83,7 @@ namespace IssueTrackingAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("date");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedByUserId")
                         .HasColumnType("int");
@@ -99,11 +99,11 @@ namespace IssueTrackingAPI.Migrations
                     b.Property<string>("ResolutionNotes")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ResolutionTimeHours")
-                        .HasColumnType("int");
+                    b.Property<TimeSpan?>("ResolutionTime")
+                        .HasColumnType("time");
 
                     b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("date");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -119,7 +119,7 @@ namespace IssueTrackingAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("date");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
