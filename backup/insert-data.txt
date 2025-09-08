@@ -1,0 +1,33 @@
+INSERT INTO [IssueTracking].[dbo].[Users_Table] ([Name],[Email],[PasswordHash],[Role],[CreatedAt]) VALUES
+('Alice Johnson','alice.johnson@example.com','admin123','Admin','2025-09-08 09:05:00'),
+('Brian Smith','brian.smith@example.com','admin123','Admin','2025-09-08 09:10:00'),
+('Carol White','carol.white@example.com','rep123','Rep','2025-09-08 09:15:00'),
+('David Lee','david.lee@example.com','rep123','Rep','2025-09-08 09:20:00'),
+('Emma Davis','emma.davis@example.com','user123','User','2025-09-08 09:25:00'),
+('Frank Miller','frank.miller@example.com','user123','User','2025-09-08 09:30:00'),
+('Grace Wilson','grace.wilson@example.com','user123','User','2025-09-08 09:35:00'),
+('Henry Clark','henry.clark@example.com','user123','User','2025-09-08 09:40:00'),
+('Ivy Baker','ivy.baker@example.com','user123','User','2025-09-08 09:45:00');
+
+
+
+
+
+SET IDENTITY_INSERT [IssueTracking].[dbo].[Tickets_Table] ON;
+
+INSERT INTO [IssueTracking].[dbo].[Tickets_Table]
+([Id],[Title],[Description],[Priority],[Type],[Status],[CreatedByUserId],[AssignedToUserId],[Comment],[CreatedAt],[UpdatedAt],[ResolvedAt],[ResolutionTime],[ResolutionNotes]) VALUES
+(101,'Login page error','Users cannot log in after password reset','High','Software','In Progress',5,3,'Investigating','2025-09-08 10:00:00','2025-09-08 11:30:00',NULL,NULL,NULL),
+(102,'Email delivery failure','Outbound emails bounce from gmail.com','Medium','Software','Open',6,NULL,'Awaiting triage','2025-09-08 10:10:00','2025-09-08 10:10:00',NULL,NULL,NULL),
+(103,'Printer not responding','Office printer shows paper jam but none present','Low','Hardware','Open',7,NULL,NULL,'2025-09-08 10:20:00','2025-09-08 10:20:00',NULL,NULL,NULL),
+(104,'Dashboard loads slowly','Dashboard takes 12s to load charts','High','Software','In Progress',8,4,'Profiling queries','2025-09-08 10:30:00','2025-09-08 11:10:00',NULL,NULL,NULL),
+(105,'VPN disconnects frequently','VPN drops every 15 minutes for remote users','Medium','Software','Closed',9,3,'Fixed by updating client','2025-09-08 09:00:00','2025-09-08 12:00:00','2025-09-08 12:00:00','03:00:00','Client upgraded to v2.4.1'),
+(106,'Keyboard keys sticking','Several keys intermittently fail','Low','Hardware','Closed',5,4,'Replaced keyboard','2025-09-07 15:00:00','2025-09-07 17:20:00','2025-09-07 17:20:00','02:20:00','Provided new keyboard'),
+(107,'Two-factor code delay','2FA SMS arrives after 5 minutes','Medium','Software','In Progress',6,3,'Checking SMS gateway','2025-09-08 09:50:00','2025-09-08 11:00:00',NULL,NULL,NULL),
+(108,'Profile picture upload fails','Image upload returns 415 for PNG','High','Software','Closed',7,4,'Content type handling fixed','2025-09-06 14:10:00','2025-09-06 16:00:00','2025-09-06 16:00:00','01:50:00','Adjusted MIME whitelist');
+
+SET IDENTITY_INSERT [IssueTracking].[dbo].[Tickets_Table] OFF;
+
+
+
+
