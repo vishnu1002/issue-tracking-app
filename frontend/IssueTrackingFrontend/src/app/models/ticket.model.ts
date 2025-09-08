@@ -10,4 +10,12 @@ export interface TicketModel {
   comment?: string;
   createdAt: string;
   updatedAt: string;
+  attachments?: Array<{
+    id: number;
+    fileName: string;
+    contentType: string;
+    fileSizeBytes: number;
+    uploadedAt: string;
+    uploadedByUserId: number;
+  }>;
 }

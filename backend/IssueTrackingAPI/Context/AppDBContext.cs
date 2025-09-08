@@ -12,6 +12,7 @@ public class AppDBContext : DbContext
     // Tables
     public DbSet<UserModel> Users_Table { get; set; }
     public DbSet<TicketModel> Tickets_Table { get; set; }
+    public DbSet<AttachmentModel> Attachments_Table { get; set; }
     // Notifications removed
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -29,7 +30,16 @@ public class AppDBContext : DbContext
             .HasForeignKey(t => t.AssignedToUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Ticket-Attachments relationship (one-to-many)
+        modelBuilder.Entity<AttachmentModel>()
+            .HasOne(a => a.Ticket)
+            .WithMany(t => t.Attachments)
+            .HasForeignKey(a => a.TicketId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Notifications removed
+
+        // Keep ResolutionTime as SQL TIME; overflow is clamped in repository logic
 
         base.OnModelCreating(modelBuilder);
     }

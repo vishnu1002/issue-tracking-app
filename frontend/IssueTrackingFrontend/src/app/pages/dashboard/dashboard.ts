@@ -78,7 +78,10 @@ export class Dashboard implements OnInit {
     this.ticketSuccess = null;
   }
 
-  // File upload removed
+  onFileSelected(event: any) {
+    const f: File | undefined = event?.target?.files?.[0];
+    this.selectedFile = f ?? null;
+  }
 
   createTicket() {
     if (!this.newTicket.title || !this.newTicket.description) {
@@ -108,16 +111,34 @@ export class Dashboard implements OnInit {
 
     this.ticketService.createTicket(payload).subscribe({
       next: (ticket) => {
-        this.creatingTicket = false;
-        this.ticketSuccess = 'Ticket created successfully!';
-
-        // Attachment feature removed
-
-        setTimeout(() => {
-          this.closeCreateTicketModal();
-          // Refresh the tickets page if we're on it
-          window.location.reload();
-        }, 1500);
+        if (this.selectedFile) {
+          this.ticketService.uploadAttachment(ticket.id, this.selectedFile).subscribe({
+            next: () => {
+              this.creatingTicket = false;
+              this.ticketSuccess = 'Ticket created successfully!';
+              setTimeout(() => {
+                this.closeCreateTicketModal();
+                window.location.reload();
+              }, 1200);
+            },
+            error: () => {
+              // Ticket created, but attachment failed
+              this.creatingTicket = false;
+              this.ticketSuccess = 'Ticket created. Attachment upload failed.';
+              setTimeout(() => {
+                this.closeCreateTicketModal();
+                window.location.reload();
+              }, 1500);
+            },
+          });
+        } else {
+          this.creatingTicket = false;
+          this.ticketSuccess = 'Ticket created successfully!';
+          setTimeout(() => {
+            this.closeCreateTicketModal();
+            window.location.reload();
+          }, 1200);
+        }
       },
       error: (err) => {
         this.creatingTicket = false;

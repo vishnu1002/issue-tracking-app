@@ -36,7 +36,7 @@ public class KPIRepo : IKPIRepo
             : 0;
 
         var avgResolutionTime = resolvedTickets.Any()
-            ? resolvedTickets.Average(t => t.ResolutionTime?.TotalHours ?? 0)
+            ? resolvedTickets.Where(t => t.ResolutionTime.HasValue).Average(t => t.ResolutionTime!.Value.TotalHours)
             : 0;
 
         return new RepresentativePerformance_DTO

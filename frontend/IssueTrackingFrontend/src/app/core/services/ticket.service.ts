@@ -53,4 +53,39 @@ export class TicketService {
   updateTicketComment(id: number, comment: string): Observable<TicketModel> {
     return this.http.put<TicketModel>(`${this.baseUrl}/${id}/comment`, { comment });
   }
+
+  // Attachments
+  uploadAttachment(ticketId: number, file: File): Observable<any> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post(`${this.baseUrl}/${ticketId}/attachments`, form);
+  }
+
+  listAttachments(
+    ticketId: number
+  ): Observable<
+    Array<{
+      id: number;
+      fileName: string;
+      contentType: string;
+      fileSizeBytes: number;
+      uploadedAt: string;
+      uploadedByUserId: number;
+    }>
+  > {
+    return this.http.get<
+      Array<{
+        id: number;
+        fileName: string;
+        contentType: string;
+        fileSizeBytes: number;
+        uploadedAt: string;
+        uploadedByUserId: number;
+      }>
+    >(`${this.baseUrl}/${ticketId}/attachments`);
+  }
+
+  getAttachmentDownloadUrl(attachmentId: number): string {
+    return `${this.baseUrl}/attachment/${attachmentId}`;
+  }
 }

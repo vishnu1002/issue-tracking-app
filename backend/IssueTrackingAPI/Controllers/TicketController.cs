@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using IssueTrackingAPI.DTO.TicketDTO;
 using IssueTrackingAPI.Model;
 using IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Security.Claims;
+using Microsoft.Net.Http.Headers;
 
 namespace IssueTrackingAPI.Controllers;
 
@@ -15,10 +17,12 @@ namespace IssueTrackingAPI.Controllers;
 public class TicketController : ControllerBase
 {
     private readonly ITicketRepo _ticketRepo;
+    private readonly string _attachmentsRoot = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "attachments");
 
     public TicketController(ITicketRepo ticketRepo)
     {
         _ticketRepo = ticketRepo;
+        if (!Directory.Exists(_attachmentsRoot)) Directory.CreateDirectory(_attachmentsRoot);
     }
 
     //
@@ -233,31 +237,53 @@ public class TicketController : ControllerBase
         if (currentRole == "Rep" && existing.AssignedToUserId != null && existing.AssignedToUserId != currentUserId)
             return Forbid();
 
-        existing.Title = dto.Title;
-        existing.Description = dto.Description;
-        existing.Priority = dto.Priority;
-        existing.Type = dto.Type;
-        existing.Status = dto.Status;
+        // Preserve existing fields if client omits them (legacy tickets may have nulls on client)
+        existing.Title = string.IsNullOrWhiteSpace(dto.Title) ? existing.Title : dto.Title;
+        existing.Description = string.IsNullOrWhiteSpace(dto.Description) ? existing.Description : dto.Description;
+        existing.Priority = string.IsNullOrWhiteSpace(dto.Priority) ? existing.Priority : dto.Priority;
+        existing.Type = string.IsNullOrWhiteSpace(dto.Type) ? existing.Type : dto.Type;
+        existing.Status = string.IsNullOrWhiteSpace(dto.Status) ? existing.Status : dto.Status;
         existing.AssignedToUserId = dto.AssignedToUserId;
         existing.Comment = dto.Comment;
         existing.ResolutionNotes = dto.ResolutionNotes;
 
-        var updatedTicket = await _ticketRepo.UpdateTicket(existing);
-
-        return Ok(new TicketRead_DTO
+        try
         {
-            Id = updatedTicket.Id,
-            Title = updatedTicket.Title,
-            Description = updatedTicket.Description,
-            Priority = updatedTicket.Priority,
-            Type = updatedTicket.Type,
-            Status = updatedTicket.Status,
-            CreatedByUserId = updatedTicket.CreatedByUserId,
-            AssignedToUserId = updatedTicket.AssignedToUserId,
-            Comment = updatedTicket.Comment,
-            CreatedAt = updatedTicket.CreatedAt,
-            UpdatedAt = updatedTicket.UpdatedAt
-        });
+            var updatedTicket = await _ticketRepo.UpdateTicket(existing);
+
+            return Ok(new TicketRead_DTO
+            {
+                Id = updatedTicket.Id,
+                Title = updatedTicket.Title,
+                Description = updatedTicket.Description,
+                Priority = updatedTicket.Priority,
+                Type = updatedTicket.Type,
+                Status = updatedTicket.Status,
+                CreatedByUserId = updatedTicket.CreatedByUserId,
+                AssignedToUserId = updatedTicket.AssignedToUserId,
+                Comment = updatedTicket.Comment,
+                CreatedAt = updatedTicket.CreatedAt,
+                UpdatedAt = updatedTicket.UpdatedAt
+            });
+        }
+        catch (DbUpdateException ex)
+        {
+            return StatusCode(500, new
+            {
+                status = 500,
+                message = "Internal Server Error. Please try again later.",
+                detail = ex.InnerException?.Message ?? ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                status = 500,
+                message = "Internal Server Error. Please try again later.",
+                detail = ex.InnerException?.Message ?? ex.Message
+            });
+        }
     }
 
     //
@@ -313,6 +339,127 @@ public class TicketController : ControllerBase
         if (!deleted) return NotFound(new { message = "Ticket not found" });
 
         return NoContent();
+    }
+
+    //
+    // Upload Attachment
+    // POST: api/ticket/{ticketId}/attachments
+    //
+    [HttpPost("{ticketId}/attachments")]
+    [RequestSizeLimit(25_000_000)] // ~25MB
+    public async Task<IActionResult> UploadAttachment(int ticketId, IFormFile file)
+    {
+        if (file == null || file.Length == 0) return BadRequest(new { message = "No file uploaded" });
+
+        var ticket = await _ticketRepo.GetTicketById(ticketId);
+        if (ticket == null) return NotFound(new { message = "Ticket not found" });
+
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        // Only Admin or ticket creator can upload attachments; Reps can upload for tickets assigned to them
+        var canUpload = currentRole switch
+        {
+            Roles.Admin => true,
+            Roles.User => ticket.CreatedByUserId == currentUserId,
+            Roles.Rep => ticket.AssignedToUserId == null || ticket.AssignedToUserId == currentUserId,
+            _ => false
+        };
+        if (!canUpload) return Forbid();
+
+        // Validate content type (images, pdf, txt)
+        var allowed = new[] { "image/png", "image/jpeg", "image/gif", "application/pdf", "text/plain" };
+        if (!allowed.Contains(file.ContentType))
+            return BadRequest(new { message = "Unsupported file type" });
+
+        var storedName = $"{Guid.NewGuid():N}_{Path.GetFileName(file.FileName)}";
+        var savePath = Path.Combine(_attachmentsRoot, storedName);
+        using (var stream = new FileStream(savePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        var attachment = new AttachmentModel
+        {
+            FileName = file.FileName,
+            StoredFileName = storedName,
+            ContentType = file.ContentType,
+            FileSizeBytes = file.Length,
+            FilePath = savePath,
+            TicketId = ticketId,
+            UploadedByUserId = currentUserId,
+            UploadedAt = DateTime.UtcNow
+        };
+
+        await _ticketRepo.AddAttachment(attachment);
+        return Ok(new { id = attachment.Id, message = "File uploaded" });
+    }
+
+    //
+    // List Attachments
+    // GET: api/ticket/{ticketId}/attachments
+    //
+    [HttpGet("{ticketId}/attachments")]
+    public async Task<IActionResult> ListAttachments(int ticketId)
+    {
+        var ticket = await _ticketRepo.GetTicketById(ticketId);
+        if (ticket == null) return NotFound(new { message = "Ticket not found" });
+
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        // Access: Admin, creator, or Rep assigned/unassigned
+        var canView = currentRole switch
+        {
+            Roles.Admin => true,
+            Roles.User => ticket.CreatedByUserId == currentUserId,
+            Roles.Rep => ticket.AssignedToUserId == null || ticket.AssignedToUserId == currentUserId,
+            _ => false
+        };
+        if (!canView) return Forbid();
+
+        var items = await _ticketRepo.GetAttachmentsByTicket(ticketId);
+        return Ok(items.Select(a => new
+        {
+            a.Id,
+            a.FileName,
+            a.ContentType,
+            a.FileSizeBytes,
+            a.UploadedAt,
+            a.UploadedByUserId
+        }));
+    }
+
+    //
+    // Download Attachment
+    // GET: api/ticket/attachment/{attachmentId}
+    //
+    [HttpGet("attachment/{attachmentId}")]
+    public async Task<IActionResult> DownloadAttachment(int attachmentId)
+    {
+        var attachment = await _ticketRepo.GetAttachmentById(attachmentId);
+        if (attachment == null) return NotFound(new { message = "Attachment not found" });
+
+        var ticket = await _ticketRepo.GetTicketById(attachment.TicketId);
+        if (ticket == null) return NotFound(new { message = "Ticket not found" });
+
+        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        var currentRole = User.FindFirst(ClaimTypes.Role).Value;
+
+        var canView = currentRole switch
+        {
+            Roles.Admin => true,
+            Roles.User => ticket.CreatedByUserId == currentUserId,
+            Roles.Rep => ticket.AssignedToUserId == null || ticket.AssignedToUserId == currentUserId,
+            _ => false
+        };
+        if (!canView) return Forbid();
+
+        if (!System.IO.File.Exists(attachment.FilePath))
+            return NotFound(new { message = "File missing on server" });
+
+        var fileBytes = await System.IO.File.ReadAllBytesAsync(attachment.FilePath);
+        return File(fileBytes, attachment.ContentType, attachment.FileName);
     }
 }
 

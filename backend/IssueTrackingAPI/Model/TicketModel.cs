@@ -42,4 +42,5 @@ public class TicketModel
     public string? ResolutionNotes { get; set; } // Notes about resolution
 
     // Navigation properties (attachments removed)
+    public ICollection<AttachmentModel> Attachments { get; set; } = new List<AttachmentModel>();
 }

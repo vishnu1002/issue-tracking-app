@@ -48,28 +48,43 @@ public class TicketRepo : ITicketRepo
             .Where(t => t.Id == ticket.Id)
             .Select(t => t.Status)
             .FirstOrDefaultAsync();
-        if (previousStatus == null)
-        {
-            return null;
-        }
+        // Normalize previous status. Some legacy rows may have null status.
+        previousStatus = previousStatus ?? string.Empty;
 
         existing.Title = ticket.Title;
         existing.Description = ticket.Description;
         existing.Priority = ticket.Priority;
         existing.Type = ticket.Type;
-        existing.Status = ticket.Status;
+        // Ensure status is never stored as null; default to existing or "Open"
+        existing.Status = string.IsNullOrWhiteSpace(ticket.Status)
+            ? (string.IsNullOrWhiteSpace(existing.Status) ? "Open" : existing.Status)
+            : ticket.Status;
         existing.AssignedToUserId = ticket.AssignedToUserId;
         existing.Comment = ticket.Comment;
         existing.ResolutionNotes = ticket.ResolutionNotes;
         existing.UpdatedAt = DateTime.UtcNow;
 
         // Handle KPI tracking based on transition from previousStatus -> current Status
-        if (ticket.Status == "Closed" && previousStatus != "Closed")
+        if (string.Equals(existing.Status, "Closed", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(previousStatus, "Closed", StringComparison.OrdinalIgnoreCase))
         {
-            existing.ResolvedAt = DateTime.UtcNow;
-            existing.ResolutionTime = existing.ResolvedAt.Value - existing.CreatedAt;
+            // If already resolved earlier, keep that timestamp; otherwise set now
+            existing.ResolvedAt = existing.ResolvedAt ?? DateTime.UtcNow;
+            // If ResolutionTime already recorded, keep it. Otherwise compute and clamp.
+            if (!existing.ResolutionTime.HasValue)
+            {
+                var computed = existing.ResolvedAt.Value - existing.CreatedAt;
+                if (computed < TimeSpan.Zero)
+                {
+                    computed = TimeSpan.Zero;
+                }
+                // SQL TIME supports up to 23:59:59.9999999
+                var sqlTimeMax = TimeSpan.FromTicks(TimeSpan.TicksPerDay - 1);
+                existing.ResolutionTime = computed > sqlTimeMax ? sqlTimeMax : computed;
+            }
         }
-        else if (ticket.Status != "Closed" && previousStatus == "Closed")
+        else if (!string.Equals(existing.Status, "Closed", StringComparison.OrdinalIgnoreCase)
+                 && string.Equals(previousStatus, "Closed", StringComparison.OrdinalIgnoreCase))
         {
             // Ticket was reopened
             existing.ResolvedAt = null;
@@ -170,5 +185,35 @@ public class TicketRepo : ITicketRepo
             .ToListAsync();
 
         return (tickets, totalCount);
+    }
+
+    // Attachments
+    public async Task<AttachmentModel?> AddAttachment(AttachmentModel attachment)
+    {
+        _context.Attachments_Table.Add(attachment);
+        await _context.SaveChangesAsync();
+        return attachment;
+    }
+
+    public async Task<IEnumerable<AttachmentModel>> GetAttachmentsByTicket(int ticketId)
+    {
+        return await _context.Attachments_Table
+            .Where(a => a.TicketId == ticketId)
+            .OrderByDescending(a => a.UploadedAt)
+            .ToListAsync();
+    }
+
+    public async Task<AttachmentModel?> GetAttachmentById(int attachmentId)
+    {
+        return await _context.Attachments_Table.FirstOrDefaultAsync(a => a.Id == attachmentId);
+    }
+
+    public async Task<bool> DeleteAttachment(int attachmentId)
+    {
+        var entity = await _context.Attachments_Table.FindAsync(attachmentId);
+        if (entity == null) return false;
+        _context.Attachments_Table.Remove(entity);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

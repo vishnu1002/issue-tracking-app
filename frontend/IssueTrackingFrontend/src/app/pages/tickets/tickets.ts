@@ -30,6 +30,10 @@ export class Tickets implements OnInit {
     this.loadTickets();
   }
 
+  getAttachmentUrl(id: number): string {
+    return this.ticketService.getAttachmentDownloadUrl(id);
+  }
+
   loadTickets() {
     this.loading.set(true);
 
@@ -40,12 +44,20 @@ export class Tickets implements OnInit {
         this.tickets = res.sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
+        // After tickets arrive, fetch attachments for each ticket for Rep view
+        this.tickets.forEach((t) => {
+          this.ticketService.listAttachments(t.id).subscribe({
+            next: (atts) => (t.attachments = atts),
+          });
+        });
         this.applyFilters();
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
     });
   }
+
+  // Inline ticket creation moved to Dashboard modal
 
   applyFilters() {
     this.filteredTickets = this.tickets.filter((ticket) => {
