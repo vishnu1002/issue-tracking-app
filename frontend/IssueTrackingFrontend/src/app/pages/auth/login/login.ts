@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +17,12 @@ export class Login {
   error: string | null = null;
   redirectUrl: string | null = null;
 
-  constructor(private auth: AuthService, private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private toast: ToastService
+  ) {}
 
   ngOnInit() {
     this.redirectUrl = this.route.snapshot.queryParamMap.get('redirect');
@@ -49,6 +55,7 @@ export class Login {
         this.loading = false;
         // Get role from AuthService after login
         const role = this.auth.getRole();
+        this.toast.success('Signed in successfully');
         setTimeout(() => {
           const target = this.redirectUrl ?? '/dashboard';
           this.router.navigate([target]);
@@ -58,6 +65,9 @@ export class Login {
         this.loading = false;
         this.error =
           err.error?.message || 'Login failed. Please check your credentials and try again.';
+        this.toast.error(
+          this.error || 'Login failed. Please check your credentials and try again.'
+        );
       },
     });
   }

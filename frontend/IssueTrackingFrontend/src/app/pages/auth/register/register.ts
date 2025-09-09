@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-register',
@@ -18,7 +19,7 @@ export class Register {
   error: string | null = null;
   success: string | null = null;
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(private auth: AuthService, private router: Router, private toast: ToastService) {}
 
   isFormValid(): boolean {
     return (
@@ -50,6 +51,7 @@ export class Register {
       next: (res) => {
         this.loading = false;
         this.success = 'Account created successfully! Redirecting to login...';
+        this.toast.success('Account created successfully');
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 2000);
@@ -57,6 +59,7 @@ export class Register {
       error: (err) => {
         this.loading = false;
         this.error = err.error?.message || 'Registration failed. Please try again.';
+        this.toast.error(this.error || 'Registration failed. Please try again.');
       },
     });
   }

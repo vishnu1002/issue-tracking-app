@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../core/services/user.service';
 import { TicketService } from '../../core/services/ticket.service';
+import { ToastService } from '../../core/services/toast.service';
 import { UserModel } from '../../models/user.model';
 
 @Component({
@@ -15,6 +16,7 @@ import { UserModel } from '../../models/user.model';
 export class Users implements OnInit {
   private userService = inject(UserService);
   private ticketService = inject(TicketService);
+  private toast = inject(ToastService);
 
   users: UserModel[] = [];
   filteredUsers: UserModel[] = [];
@@ -94,17 +96,18 @@ export class Users implements OnInit {
           // Remove user from the list
           this.users = this.users.filter((u) => u.id !== user.id);
           this.applyFilters();
+          this.toast.success('User deleted');
         },
         error: (err) => {
           console.error('Failed to delete user:', err);
 
           // Handle specific error messages from the backend
           if (err.status === 400 && err.error?.message) {
-            alert(err.error.message);
+            this.toast.error(err.error.message);
           } else if (err.status === 404) {
-            alert('User not found.');
+            this.toast.error('User not found.');
           } else {
-            alert('Failed to delete user. Please try again.');
+            this.toast.error('Failed to delete user. Please try again.');
           }
         },
       });
