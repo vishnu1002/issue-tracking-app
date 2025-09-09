@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 import { KPIService } from '../../core/services/kpi.service';
 import { DashboardStats, RepresentativePerformance, KPIFilters } from '../../models/kpi.model';
 
@@ -23,7 +24,7 @@ export class Analytics implements OnInit {
   fromDate: string = '';
   toDate: string = '';
 
-  constructor(private kpiService: KPIService) {
+  constructor(private kpiService: KPIService, private title: Title) {
     // Set default date range to last 30 days
     const today = new Date();
     const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -32,6 +33,7 @@ export class Analytics implements OnInit {
   }
 
   ngOnInit() {
+    this.title.setTitle('Issue Tracker - Analytics');
     this.loadAnalytics();
   }
 

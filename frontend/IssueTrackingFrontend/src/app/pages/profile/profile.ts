@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -17,6 +18,7 @@ export class Profile implements OnInit {
   auth = inject(AuthService);
   userService = inject(UserService);
   router = inject(Router);
+  title = inject(Title);
 
   user = toSignal(this.auth.user$, { initialValue: null });
 
@@ -36,6 +38,7 @@ export class Profile implements OnInit {
   success: string | null = null;
 
   ngOnInit() {
+    this.title.setTitle('Issue Tracker - Profile');
     this.loadUserData();
   }
 
@@ -174,5 +177,22 @@ export class Profile implements OnInit {
     if (input) {
       input.type = input.type === 'password' ? 'text' : 'password';
     }
+  }
+
+  get initials(): string {
+    const name = this.user()?.name || this.profileData.name || '';
+    return this.computeInitials(name);
+  }
+
+  private computeInitials(name: string): string {
+    const trimmed = name.trim();
+    if (!trimmed) return 'UU';
+    const parts = trimmed.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) {
+      const first = parts[0].charAt(0) || '';
+      const second = parts[0].charAt(1) || first;
+      return (first + second).toUpperCase();
+    }
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
   }
 }

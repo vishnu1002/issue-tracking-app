@@ -1,9 +1,12 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 import { TicketService } from '../../core/services/ticket.service';
 import { TicketModel } from '../../models/ticket.model';
 import { AuthService } from '../../core/services/auth.service';
+import { ActivatedRoute } from '@angular/router';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-tickets',
@@ -23,11 +26,24 @@ export class Tickets implements OnInit {
   priorityFilter = '';
   typeFilter = '';
 
-  constructor(private ticketService: TicketService, private auth: AuthService) {}
+  constructor(
+    private ticketService: TicketService,
+    private auth: AuthService,
+    private toast: ToastService,
+    private route: ActivatedRoute,
+    private title: Title
+  ) {}
 
   ngOnInit() {
+    this.title.setTitle('Issue Tracker - Tickets');
     this.role = this.auth.getRole();
     this.loadTickets();
+    // Show toast when redirected after creating a ticket (via query param or navigation state)
+    const createdParam = this.route.snapshot.queryParamMap.get('created');
+    const navState = (history.state && (history.state as any).ticketCreated) || false;
+    if (createdParam === '1' || createdParam === 'true' || navState) {
+      this.toast.success('Ticket created successfully');
+    }
   }
 
   getAttachmentUrl(id: number): string {
@@ -66,7 +82,8 @@ export class Tickets implements OnInit {
         !q ||
         String(ticket.id) === q.replace(/^#/, '') ||
         ticket.title.toLowerCase().includes(q) ||
-        ticket.description.toLowerCase().includes(q);
+        ticket.description.toLowerCase().includes(q) ||
+        (this.role === 'Admin' && (ticket.createdByUserEmail || '').toLowerCase().includes(q));
 
       const statusVal = this.getStatusDisplay(ticket.status).toLowerCase();
       const filterVal = (this.statusFilter || '').toLowerCase().replace('_', ' ');
@@ -90,6 +107,17 @@ export class Tickets implements OnInit {
   updateStatus(ticket: TicketModel, status: TicketModel['status']) {
     if (this.role !== 'Rep') return;
 
+    // Check if trying to change from Closed to In Progress
+    if (
+      (ticket.status === 'CLOSED' || ticket.status === 'Closed') &&
+      (status === 'IN_PROGRESS' || status === 'In Progress')
+    ) {
+      const confirmed = confirm('Do you want to reopen the ticket?');
+      if (!confirmed) {
+        return; // Keep it closed
+      }
+    }
+
     const payload = {
       id: ticket.id,
       title: ticket.title,
@@ -104,6 +132,7 @@ export class Tickets implements OnInit {
     this.ticketService.updateTicket(ticket.id, payload).subscribe({
       next: (updated) => {
         ticket.status = updated.status;
+        this.toast.success(`Status updated to ${this.getStatusDisplay(updated.status)}`);
       },
     });
   }
@@ -168,10 +197,11 @@ export class Tickets implements OnInit {
           // Remove ticket from the list
           this.tickets = this.tickets.filter((t) => t.id !== ticket.id);
           this.applyFilters();
+          this.toast.success('Ticket deleted');
         },
         error: (err) => {
           console.error('Failed to delete ticket:', err);
-          alert('Failed to delete ticket. Please try again.');
+          this.toast.error('Failed to delete ticket. Please try again.');
         },
       });
     }

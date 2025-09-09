@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { AuthService } from '../../core/services/auth.service';
 import { TicketService } from '../../core/services/ticket.service';
 import { UserService } from '../../core/services/user.service';
@@ -19,6 +20,7 @@ export class Dashboard implements OnInit {
   auth = inject(AuthService);
   ticketService = inject(TicketService);
   userService = inject(UserService);
+  title = inject(Title);
 
   // Wait for the hydrated user signal
   user = toSignal(this.auth.user$, { initialValue: null });
@@ -44,6 +46,7 @@ export class Dashboard implements OnInit {
   selectedFile: File | null = null;
 
   ngOnInit() {
+    this.title.setTitle('Issue Tracker - Dashboard');
     this.loadRepresentatives();
   }
 
