@@ -2,16 +2,29 @@
   <!-- -------------------------------- -->
   <!-- Filter Section -->
   <!-- -------------------------------- -->
-  <div class="mb-6 bg-gray-800 p-4 rounded-xl shadow">
-    <div class="flex flex-wrap gap-4 items-end">
-      <div class="flex-1 min-w-48">
-        <!-- <label class="block text-sm font-medium text-gray-300 mb-2">Search</label> -->
+  <div class="mb-6 bg-gray-800 p-2 rounded-xl shadow">
+    <div class="flex flex-wrap gap-3 items-end">
+      <div class="flex-1 min-w-48 relative">
+        <svg
+          class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 110-15 7.5 7.5 0 010 15z"
+          />
+        </svg>
         <input
           type="text"
           [(ngModel)]="searchTerm"
           (input)="applyFilters()"
           placeholder="Search tickets..."
-          class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          class="w-full pl-9 pr-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
 
@@ -129,6 +142,17 @@
           'bg-red-500': ticket.status === 'CLOSED' || ticket.status === 'Closed'
         }"
       ></div>
+      <!-- Top status bar (Admin role) -->
+      <div
+        *ngIf="role === 'Admin'"
+        class="absolute inset-x-0 top-0 h-1.5"
+        [ngClass]="{
+          'bg-blue-500': ticket.status === 'OPEN' || ticket.status === 'Open',
+          'bg-yellow-500': ticket.status === 'IN_PROGRESS' || ticket.status === 'In Progress',
+          'bg-green-500': ticket.status === 'RESOLVED' || ticket.status === 'Resolved',
+          'bg-red-500': ticket.status === 'CLOSED' || ticket.status === 'Closed'
+        }"
+      ></div>
 
       <div class="flex justify-between items-start mb-3">
         <h3 class="text-lg font-semibold text-white">#{{ ticket.id }} · {{ ticket.title }}</h3>
@@ -187,20 +211,50 @@
               </span>
             </ng-container>
             <ng-template #otherRolesChip>
-              <span
-                class="px-3 py-1 text-xs font-medium rounded-full"
-                [ngClass]="{
-                  'bg-green-100 text-green-800':
-                    ticket.status === 'RESOLVED' || ticket.status === 'Resolved',
-                  'bg-yellow-100 text-yellow-800':
-                    ticket.status === 'IN_PROGRESS' || ticket.status === 'In Progress',
-                  'bg-red-100 text-red-800':
-                    ticket.status === 'CLOSED' || ticket.status === 'Closed',
-                  'bg-blue-100 text-blue-800': ticket.status === 'OPEN' || ticket.status === 'Open'
-                }"
-              >
-                {{ getStatusDisplay(ticket.status) }}
-              </span>
+              <ng-container *ngIf="role === 'Admin'; else minimalStatusChip">
+                <span
+                  class="px-2.5 py-1 text-xs font-semibold rounded-full border border-gray-600 text-gray-300 bg-gray-700"
+                >
+                  {{ ticket.priority }}
+                </span>
+                <span
+                  class="px-2.5 py-1 text-xs font-semibold rounded-full border border-gray-600 text-gray-300 bg-gray-700"
+                >
+                  {{ ticket.type }}
+                </span>
+                <span
+                  class="px-3 py-1 text-xs font-semibold rounded-full"
+                  [ngClass]="{
+                    'bg-green-100 text-green-800':
+                      ticket.status === 'RESOLVED' || ticket.status === 'Resolved',
+                    'bg-yellow-100 text-yellow-800':
+                      ticket.status === 'IN_PROGRESS' || ticket.status === 'In Progress',
+                    'bg-red-100 text-red-800':
+                      ticket.status === 'CLOSED' || ticket.status === 'Closed',
+                    'bg-blue-100 text-blue-800':
+                      ticket.status === 'OPEN' || ticket.status === 'Open'
+                  }"
+                >
+                  {{ getStatusDisplay(ticket.status) }}
+                </span>
+              </ng-container>
+              <ng-template #minimalStatusChip>
+                <span
+                  class="px-3 py-1 text-xs font-medium rounded-full"
+                  [ngClass]="{
+                    'bg-green-100 text-green-800':
+                      ticket.status === 'RESOLVED' || ticket.status === 'Resolved',
+                    'bg-yellow-100 text-yellow-800':
+                      ticket.status === 'IN_PROGRESS' || ticket.status === 'In Progress',
+                    'bg-red-100 text-red-800':
+                      ticket.status === 'CLOSED' || ticket.status === 'Closed',
+                    'bg-blue-100 text-blue-800':
+                      ticket.status === 'OPEN' || ticket.status === 'Open'
+                  }"
+                >
+                  {{ getStatusDisplay(ticket.status) }}
+                </span>
+              </ng-template>
             </ng-template>
           </ng-template>
         </div>
@@ -414,10 +468,54 @@
         </ng-template>
       </div>
 
+      <!-- Attachments (Admin view) -->
+      <div class="mt-4 border-t border-gray-600 pt-4" *ngIf="role === 'Admin'">
+        <h4 class="text-sm font-medium text-gray-300 mb-2">Attachments</h4>
+        <ng-container *ngIf="ticket.attachments?.length; else noAttachmentsAdmin">
+          <ul class="space-y-2">
+            <li
+              *ngFor="let att of ticket.attachments"
+              class="flex items-center justify-between bg-gray-700 p-2 rounded"
+            >
+              <span class="text-gray-200 text-sm"
+                >{{ att.fileName }} ({{ att.fileSizeBytes | number }} bytes)</span
+              >
+              <a
+                [href]="getAttachmentUrl(att.id)"
+                target="_blank"
+                class="inline-flex items-center px-2 py-1 text-xs font-medium text-indigo-200 bg-indigo-900/40 hover:bg-indigo-900/60 border border-indigo-800/60 rounded-md transition-colors cursor-pointer"
+                title="Download"
+              >
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"
+                  />
+                </svg>
+                Download
+              </a>
+            </li>
+          </ul>
+        </ng-container>
+        <ng-template #noAttachmentsAdmin>
+          <p class="text-xs text-gray-500">No attachments</p>
+        </ng-template>
+      </div>
+
       <!-- -------------------------------- -->
       <!-- User: Display Rep comments -->
       <!-- -------------------------------- -->
       <div *ngIf="role === 'User' && ticket.comment" class="mt-4 border-t border-gray-600 pt-4">
+        <h4 class="text-sm font-medium text-gray-300 mb-2">Rep Comment</h4>
+        <div class="bg-gray-700 p-3 rounded-lg">
+          <p class="text-gray-200 text-sm">{{ ticket.comment }}</p>
+        </div>
+      </div>
+
+      <!-- Admin: Display Rep comments -->
+      <div *ngIf="role === 'Admin' && ticket.comment" class="mt-4 border-t border-gray-600 pt-4">
         <h4 class="text-sm font-medium text-gray-300 mb-2">Rep Comment</h4>
         <div class="bg-gray-700 p-3 rounded-lg">
           <p class="text-gray-200 text-sm">{{ ticket.comment }}</p>
@@ -564,7 +662,7 @@
       <div *ngIf="role === 'Admin'" class="mt-4 flex justify-end">
         <button
           (click)="deleteTicket(ticket)"
-          class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-200 bg-red-900/40 hover:bg-red-900/60 border border-red-800/60 rounded-md transition-colors cursor-pointer"
+          class="group inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-rose-100 bg-rose-900/40 hover:bg-rose-900/60 border border-rose-800/60 rounded-md transition-all cursor-pointer shadow-sm ring-1 ring-rose-500/20 hover:ring-rose-400/30 hover:shadow-rose-900/20"
           title="Delete Ticket"
         >
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

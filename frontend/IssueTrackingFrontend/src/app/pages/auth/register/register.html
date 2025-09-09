@@ -1,32 +1,30 @@
-<div class="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+<div
+  class="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 relative"
+>
+  <a
+    routerLink="/"
+    class="absolute top-6 left-6 inline-flex items-center gap-2 text-sm text-gray-300 hover:text-white cursor-pointer"
+    aria-label="Back to home"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      class="w-4 h-4"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M6.75 12 3 8.25m0 0L6.75 4.5M3 8.25h13.5a4.5 4.5 0 010 9H12"
+      />
+    </svg>
+    Back to Home
+  </a>
   <div class="max-w-md w-full space-y-8">
     <div class="text-center">
-      <div class="mb-4">
-        <button
-          routerLink="/"
-          class="inline-flex items-center px-3 py-2 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
-        >
-          <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-            ></path>
-          </svg>
-          Home
-        </button>
-      </div>
-      <h2 class="mt-6 text-3xl font-extrabold text-white">Create your account</h2>
-      <p class="mt-2 text-sm text-gray-400">
-        Or
-        <a
-          routerLink="/login"
-          class="font-medium text-indigo-400 hover:text-indigo-300 cursor-pointer"
-        >
-          sign in to your existing account
-        </a>
-      </p>
+      <h2 class="mt-6 text-3xl font-extrabold text-white">Create an account</h2>
     </div>
 
     <form (ngSubmit)="submit()" class="mt-8 space-y-6">
@@ -54,17 +52,34 @@
         <!-- Email -->
         <div>
           <label for="email" class="block text-sm font-medium text-gray-300"> Email address </label>
-          <input
-            id="email"
-            type="email"
-            [(ngModel)]="userData.email"
-            name="email"
-            required
-            email
-            #emailInput="ngModel"
-            class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 text-white bg-gray-700 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm cursor-pointer"
-            placeholder="Enter your email"
-          />
+          <div class="relative">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-4 h-4 text-gray-400 opacity-60 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+              />
+            </svg>
+            <input
+              id="email"
+              type="email"
+              [(ngModel)]="userData.email"
+              name="email"
+              required
+              email
+              #emailInput="ngModel"
+              class="mt-1 appearance-none relative z-0 block w-full pl-9 pr-3 py-2 border border-gray-600 placeholder-gray-400 text-white bg-gray-700 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
+              placeholder="Enter your email"
+            />
+          </div>
           <div *ngIf="emailInput.invalid && emailInput.touched" class="mt-1 text-sm text-red-400">
             <div *ngIf="emailInput.errors?.['required']">Email is required</div>
             <div *ngIf="emailInput.errors?.['email']">Please enter a valid email address</div>
@@ -75,6 +90,21 @@
         <div>
           <label for="password" class="block text-sm font-medium text-gray-300"> Password </label>
           <div class="relative">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-4 h-4 text-gray-400 opacity-60 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+              />
+            </svg>
             <input
               id="password"
               type="password"
@@ -83,7 +113,7 @@
               required
               minlength="6"
               #passwordInput="ngModel"
-              class="mt-1 appearance-none relative block w-full px-3 py-2 pr-12 border border-gray-600 placeholder-gray-400 text-white bg-gray-700 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm cursor-pointer"
+              class="mt-1 appearance-none relative z-0 block w-full pl-9 pr-12 py-2 border border-gray-600 placeholder-gray-400 text-white bg-gray-700 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
               placeholder="Enter your password"
             />
             <button
@@ -129,6 +159,21 @@
             Confirm Password
           </label>
           <div class="relative">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-4 h-4 text-gray-400 opacity-60 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+              />
+            </svg>
             <input
               id="confirmPassword"
               type="password"
@@ -136,7 +181,7 @@
               name="confirmPassword"
               required
               #confirmPasswordInput="ngModel"
-              class="mt-1 appearance-none relative block w-full px-3 py-2 pr-12 border border-gray-600 placeholder-gray-400 text-white bg-gray-700 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm cursor-pointer"
+              class="mt-1 appearance-none relative z-0 block w-full pl-9 pr-12 py-2 border border-gray-600 placeholder-gray-400 text-white bg-gray-700 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
               placeholder="Confirm your password"
             />
             <button
