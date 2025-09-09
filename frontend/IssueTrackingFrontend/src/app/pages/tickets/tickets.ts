@@ -79,7 +79,8 @@ export class Tickets implements OnInit {
         !q ||
         String(ticket.id) === q.replace(/^#/, '') ||
         ticket.title.toLowerCase().includes(q) ||
-        ticket.description.toLowerCase().includes(q);
+        ticket.description.toLowerCase().includes(q) ||
+        (this.role === 'Admin' && (ticket.createdByUserEmail || '').toLowerCase().includes(q));
 
       const statusVal = this.getStatusDisplay(ticket.status).toLowerCase();
       const filterVal = (this.statusFilter || '').toLowerCase().replace('_', ' ');
