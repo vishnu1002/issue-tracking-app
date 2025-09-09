@@ -1,9 +1,11 @@
 <div>
+  <!-- -------------------------------- -->
   <!-- Filter Section -->
+  <!-- -------------------------------- -->
   <div class="mb-6 bg-gray-800 p-4 rounded-xl shadow">
     <div class="flex flex-wrap gap-4 items-end">
       <div class="flex-1 min-w-48">
-        <label class="block text-sm font-medium text-gray-300 mb-2">Search</label>
+        <!-- <label class="block text-sm font-medium text-gray-300 mb-2">Search</label> -->
         <input
           type="text"
           [(ngModel)]="searchTerm"
@@ -14,7 +16,7 @@
       </div>
 
       <div class="min-w-32">
-        <label class="block text-sm font-medium text-gray-300 mb-2">Status</label>
+        <!-- <label class="block text-sm font-medium text-gray-300 mb-2">Status</label> -->
         <select
           [(ngModel)]="statusFilter"
           (change)="applyFilters()"
@@ -29,7 +31,7 @@
       </div>
 
       <div class="min-w-32">
-        <label class="block text-sm font-medium text-gray-300 mb-2">Priority</label>
+        <!-- <label class="block text-sm font-medium text-gray-300 mb-2">Priority</label> -->
         <select
           [(ngModel)]="priorityFilter"
           (change)="applyFilters()"
@@ -43,7 +45,7 @@
       </div>
 
       <div class="min-w-32">
-        <label class="block text-sm font-medium text-gray-300 mb-2">Type</label>
+        <!-- <label class="block text-sm font-medium text-gray-300 mb-2">Type</label> -->
         <select
           [(ngModel)]="typeFilter"
           (change)="applyFilters()"
@@ -64,13 +66,17 @@
     </div>
   </div>
 
+  <!-- -------------------------------- -->
   <!-- Loading State -->
+  <!-- -------------------------------- -->
   <div *ngIf="loading()" class="flex justify-center items-center py-8">
     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
     <span class="ml-2 text-gray-400">Loading tickets...</span>
   </div>
 
+  <!-- -------------------------------- -->
   <!-- Empty State -->
+  <!-- -------------------------------- -->
   <div *ngIf="!loading() && filteredTickets.length === 0" class="text-center py-12">
     <svg
       class="mx-auto h-12 w-12 text-gray-400"
@@ -93,37 +99,246 @@
     </p>
   </div>
 
-  <!-- Create Ticket moved to Dashboard modal -->
-
+  <!-- -------------------------------- -->
   <!-- Tickets List -->
+  <!-- -------------------------------- -->
   <div *ngIf="!loading() && filteredTickets.length > 0" class="space-y-4">
     <div
       *ngFor="let ticket of filteredTickets"
-      class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 hover:border-gray-600 transition-colors"
+      class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 hover:border-gray-600 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden"
     >
+      <!-- Top status bar (Rep role only) -->
+      <div
+        *ngIf="role === 'Rep'"
+        class="absolute inset-x-0 top-0 h-1.5"
+        [ngClass]="{
+          'bg-blue-500': ticket.status === 'OPEN' || ticket.status === 'Open',
+          'bg-yellow-500': ticket.status === 'IN_PROGRESS' || ticket.status === 'In Progress',
+          'bg-green-500': ticket.status === 'RESOLVED' || ticket.status === 'Resolved',
+          'bg-red-500': ticket.status === 'CLOSED' || ticket.status === 'Closed'
+        }"
+      ></div>
+      <!-- Left status bar (User role only) -->
+      <div
+        *ngIf="role === 'User'"
+        class="absolute left-0 top-0 h-full w-1"
+        [ngClass]="{
+          'bg-blue-500': ticket.status === 'OPEN' || ticket.status === 'Open',
+          'bg-yellow-500': ticket.status === 'IN_PROGRESS' || ticket.status === 'In Progress',
+          'bg-green-500': ticket.status === 'RESOLVED' || ticket.status === 'Resolved',
+          'bg-red-500': ticket.status === 'CLOSED' || ticket.status === 'Closed'
+        }"
+      ></div>
+
       <div class="flex justify-between items-start mb-3">
         <h3 class="text-lg font-semibold text-white">#{{ ticket.id }} · {{ ticket.title }}</h3>
         <div class="flex items-center gap-2">
-          <span
-            class="px-3 py-1 text-xs font-medium rounded-full"
-            [ngClass]="{
-              'bg-green-100 text-green-800':
-                ticket.status === 'RESOLVED' || ticket.status === 'Resolved',
-              'bg-yellow-100 text-yellow-800':
-                ticket.status === 'IN_PROGRESS' || ticket.status === 'In Progress',
-              'bg-red-100 text-red-800': ticket.status === 'CLOSED' || ticket.status === 'Closed',
-              'bg-blue-100 text-blue-800': ticket.status === 'OPEN' || ticket.status === 'Open'
-            }"
-          >
-            {{ getStatusDisplay(ticket.status) }}
-          </span>
+          <!-- Rep-only enhanced badges -->
+          <ng-container *ngIf="role === 'Rep'; else defaultStatusChip">
+            <span
+              class="px-2.5 py-1 text-xs font-semibold rounded-full border border-gray-600 text-gray-300 bg-gray-700"
+            >
+              {{ ticket.priority }}
+            </span>
+            <span
+              class="px-2.5 py-1 text-xs font-semibold rounded-full border border-gray-600 text-gray-300 bg-gray-700"
+            >
+              {{ ticket.type }}
+            </span>
+            <span
+              class="px-3 py-1 text-xs font-semibold rounded-full"
+              [ngClass]="{
+                'bg-green-100 text-green-800':
+                  ticket.status === 'RESOLVED' || ticket.status === 'Resolved',
+                'bg-yellow-100 text-yellow-800':
+                  ticket.status === 'IN_PROGRESS' || ticket.status === 'In Progress',
+                'bg-red-100 text-red-800': ticket.status === 'CLOSED' || ticket.status === 'Closed',
+                'bg-blue-100 text-blue-800': ticket.status === 'OPEN' || ticket.status === 'Open'
+              }"
+            >
+              {{ getStatusDisplay(ticket.status) }}
+            </span>
+          </ng-container>
+          <ng-template #defaultStatusChip>
+            <ng-container *ngIf="role === 'User'; else otherRolesChip">
+              <span
+                class="px-2.5 py-1 text-xs font-semibold rounded-full border border-gray-600 text-gray-300"
+              >
+                {{ ticket.type }}
+              </span>
+              <span
+                class="px-2.5 py-1 text-xs font-semibold rounded-full border border-gray-600 text-gray-300"
+              >
+                {{ ticket.priority }}
+              </span>
+              <span
+                class="px-3 py-1 text-xs font-semibold rounded-full"
+                [ngClass]="{
+                  'bg-green-100 text-green-800':
+                    ticket.status === 'RESOLVED' || ticket.status === 'Resolved',
+                  'bg-yellow-100 text-yellow-800':
+                    ticket.status === 'IN_PROGRESS' || ticket.status === 'In Progress',
+                  'bg-red-100 text-red-800':
+                    ticket.status === 'CLOSED' || ticket.status === 'Closed',
+                  'bg-blue-100 text-blue-800': ticket.status === 'OPEN' || ticket.status === 'Open'
+                }"
+              >
+                {{ getStatusDisplay(ticket.status) }}
+              </span>
+            </ng-container>
+            <ng-template #otherRolesChip>
+              <span
+                class="px-3 py-1 text-xs font-medium rounded-full"
+                [ngClass]="{
+                  'bg-green-100 text-green-800':
+                    ticket.status === 'RESOLVED' || ticket.status === 'Resolved',
+                  'bg-yellow-100 text-yellow-800':
+                    ticket.status === 'IN_PROGRESS' || ticket.status === 'In Progress',
+                  'bg-red-100 text-red-800':
+                    ticket.status === 'CLOSED' || ticket.status === 'Closed',
+                  'bg-blue-100 text-blue-800': ticket.status === 'OPEN' || ticket.status === 'Open'
+                }"
+              >
+                {{ getStatusDisplay(ticket.status) }}
+              </span>
+            </ng-template>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Rep-only status stepper -->
+      <div *ngIf="role === 'Rep'" class="mt-3 mb-2">
+        <div class="flex items-center gap-2">
+          <!-- Open -->
+          <div class="flex items-center gap-2">
+            <div
+              class="h-2 w-2 rounded-full"
+              [ngClass]="{
+                'bg-blue-500':
+                  ticket.status === 'OPEN' ||
+                  ticket.status === 'Open' ||
+                  ticket.status === 'IN_PROGRESS' ||
+                  ticket.status === 'In Progress' ||
+                  ticket.status === 'RESOLVED' ||
+                  ticket.status === 'Resolved' ||
+                  ticket.status === 'CLOSED' ||
+                  ticket.status === 'Closed',
+                'bg-gray-600': !(
+                  ticket.status === 'OPEN' ||
+                  ticket.status === 'Open' ||
+                  ticket.status === 'IN_PROGRESS' ||
+                  ticket.status === 'In Progress' ||
+                  ticket.status === 'RESOLVED' ||
+                  ticket.status === 'Resolved' ||
+                  ticket.status === 'CLOSED' ||
+                  ticket.status === 'Closed'
+                )
+              }"
+              title="Open"
+            ></div>
+            <div
+              class="h-1 w-10 rounded"
+              [ngClass]="{
+                'bg-blue-500':
+                  ticket.status === 'IN_PROGRESS' ||
+                  ticket.status === 'In Progress' ||
+                  ticket.status === 'RESOLVED' ||
+                  ticket.status === 'Resolved' ||
+                  ticket.status === 'CLOSED' ||
+                  ticket.status === 'Closed',
+                'bg-gray-700': !(
+                  ticket.status === 'IN_PROGRESS' ||
+                  ticket.status === 'In Progress' ||
+                  ticket.status === 'RESOLVED' ||
+                  ticket.status === 'Resolved' ||
+                  ticket.status === 'CLOSED' ||
+                  ticket.status === 'Closed'
+                )
+              }"
+            ></div>
+          </div>
+          <!-- In Progress -->
+          <div class="flex items-center gap-2">
+            <div
+              class="h-2 w-2 rounded-full"
+              [ngClass]="{
+                'bg-yellow-500':
+                  ticket.status === 'IN_PROGRESS' ||
+                  ticket.status === 'In Progress' ||
+                  ticket.status === 'RESOLVED' ||
+                  ticket.status === 'Resolved' ||
+                  ticket.status === 'CLOSED' ||
+                  ticket.status === 'Closed',
+                'bg-gray-600': !(
+                  ticket.status === 'IN_PROGRESS' ||
+                  ticket.status === 'In Progress' ||
+                  ticket.status === 'RESOLVED' ||
+                  ticket.status === 'Resolved' ||
+                  ticket.status === 'CLOSED' ||
+                  ticket.status === 'Closed'
+                )
+              }"
+              title="In Progress"
+            ></div>
+            <div
+              class="h-1 w-10 rounded"
+              [ngClass]="{
+                'bg-green-500':
+                  ticket.status === 'RESOLVED' ||
+                  ticket.status === 'Resolved' ||
+                  ticket.status === 'CLOSED' ||
+                  ticket.status === 'Closed',
+                'bg-gray-700': !(
+                  ticket.status === 'RESOLVED' ||
+                  ticket.status === 'Resolved' ||
+                  ticket.status === 'CLOSED' ||
+                  ticket.status === 'Closed'
+                )
+              }"
+            ></div>
+          </div>
+          <!-- Resolved -->
+          <div class="flex items-center gap-2">
+            <div
+              class="h-2 w-2 rounded-full"
+              [ngClass]="{
+                'bg-green-500':
+                  ticket.status === 'RESOLVED' ||
+                  ticket.status === 'Resolved' ||
+                  ticket.status === 'CLOSED' ||
+                  ticket.status === 'Closed',
+                'bg-gray-600': !(
+                  ticket.status === 'RESOLVED' ||
+                  ticket.status === 'Resolved' ||
+                  ticket.status === 'CLOSED' ||
+                  ticket.status === 'Closed'
+                )
+              }"
+              title="Resolved"
+            ></div>
+            <div
+              class="h-1 w-10 rounded"
+              [ngClass]="{
+                'bg-red-500': ticket.status === 'CLOSED' || ticket.status === 'Closed',
+                'bg-gray-700': !(ticket.status === 'CLOSED' || ticket.status === 'Closed')
+              }"
+            ></div>
+          </div>
+          <!-- Closed -->
+          <div class="flex items-center gap-2">
+            <div
+              class="h-2 w-2 rounded-full"
+              [ngClass]="{
+                'bg-red-500': ticket.status === 'CLOSED' || ticket.status === 'Closed',
+                'bg-gray-600': !(ticket.status === 'CLOSED' || ticket.status === 'Closed')
+              }"
+              title="Closed"
+            ></div>
+          </div>
         </div>
       </div>
 
       <p class="text-gray-300 text-sm mb-4 leading-relaxed">{{ ticket.description }}</p>
-      <!-- <div class="text-xs text-gray-400 mb-3" *ngIf="ticket.createdByUserEmail">
-        <span>Created by: {{ ticket.createdByUserEmail }}</span>
-      </div> -->
 
       <div class="flex flex-wrap gap-4 text-xs text-gray-400 mb-4">
         <span class="flex items-center">
@@ -161,7 +376,9 @@
         </span>
       </div>
 
+      <!-- -------------------------------- -->
       <!-- Attachments (Rep/User view) -->
+      <!-- -------------------------------- -->
       <div class="mt-4 border-t border-gray-600 pt-4" *ngIf="role === 'Rep'">
         <h4 class="text-sm font-medium text-gray-300 mb-2">Attachments</h4>
         <ng-container *ngIf="ticket.attachments?.length; else noAttachments">
@@ -197,7 +414,9 @@
         </ng-template>
       </div>
 
+      <!-- -------------------------------- -->
       <!-- User: Display Rep comments -->
+      <!-- -------------------------------- -->
       <div *ngIf="role === 'User' && ticket.comment" class="mt-4 border-t border-gray-600 pt-4">
         <h4 class="text-sm font-medium text-gray-300 mb-2">Rep Comment</h4>
         <div class="bg-gray-700 p-3 rounded-lg">
@@ -209,7 +428,22 @@
       <div *ngIf="role === 'Rep'" class="mt-4 space-y-4">
         <!-- Comment Section -->
         <div class="border-t border-gray-600 pt-4">
-          <h4 class="text-sm font-medium text-gray-300 mb-2">Rep Comment</h4>
+          <h4 class="text-sm font-semibold text-gray-200 mb-2 flex items-center gap-2">
+            <svg
+              class="w-4 h-4 text-indigo-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
+            </svg>
+            Rep Comment
+          </h4>
 
           <!-- Display existing comment -->
           <div *ngIf="!editingComment[ticket.id] && ticket.comment" class="mb-3">
@@ -218,8 +452,16 @@
             </div>
             <button
               (click)="startEditingComment(ticket)"
-              class="mt-2 text-xs text-indigo-400 hover:text-indigo-300 cursor-pointer"
+              class="mt-2 inline-flex items-center gap-1 text-xs text-indigo-300 hover:text-indigo-200 cursor-pointer"
             >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5h2m-1 0v14m-7-7h14"
+                />
+              </svg>
               Edit Comment
             </button>
           </div>
@@ -228,7 +470,7 @@
           <div *ngIf="!editingComment[ticket.id] && !ticket.comment">
             <button
               (click)="startEditingComment(ticket)"
-              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors cursor-pointer"
+              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors cursor-pointer shadow-sm ring-1 ring-indigo-500/30"
             >
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -248,18 +490,18 @@
               [(ngModel)]="commentText[ticket.id]"
               placeholder="Add a comment about this ticket..."
               rows="3"
-              class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none placeholder-gray-400"
             ></textarea>
             <div class="mt-2 flex gap-2">
               <button
                 (click)="saveComment(ticket)"
-                class="px-3 py-1 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors cursor-pointer"
+                class="px-3 py-1 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors cursor-pointer shadow-sm ring-1 ring-indigo-500/30"
               >
                 {{ ticket.comment ? 'Update' : 'Add' }} Comment
               </button>
               <button
                 (click)="cancelEditingComment(ticket)"
-                class="px-3 py-1 text-xs font-medium text-gray-400 hover:text-gray-300 cursor-pointer"
+                class="px-3 py-1 text-xs font-medium text-gray-300 hover:text-white cursor-pointer bg-gray-700/60 rounded-md border border-gray-600"
               >
                 Cancel
               </button>
@@ -270,29 +512,55 @@
         <hr class="border-gray-600 my-3" />
 
         <!-- Status Update Buttons -->
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
           <button
             (click)="updateStatus(ticket, 'In Progress')"
-            class="px-4 py-2 text-sm font-medium text-yellow-800 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors cursor-pointer"
+            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-900 bg-amber-100 hover:bg-amber-200 rounded-md transition-colors cursor-pointer shadow-sm ring-1 ring-amber-500/20"
           >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3"
+              />
+            </svg>
             In Progress
           </button>
           <button
             (click)="updateStatus(ticket, 'Resolved')"
-            class="px-4 py-2 text-sm font-medium text-green-800 bg-green-100 hover:bg-green-200 rounded-md transition-colors cursor-pointer"
+            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-900 bg-emerald-100 hover:bg-emerald-200 rounded-md transition-colors cursor-pointer shadow-sm ring-1 ring-emerald-500/20"
           >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
             Resolve
           </button>
           <button
             (click)="updateStatus(ticket, 'Closed')"
-            class="px-4 py-2 text-sm font-medium text-red-800 bg-red-100 hover:bg-red-200 rounded-md transition-colors cursor-pointer"
+            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-rose-900 bg-rose-100 hover:bg-rose-200 rounded-md transition-colors cursor-pointer shadow-sm ring-1 ring-rose-500/20"
           >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
             Close
           </button>
         </div>
       </div>
 
-      <!-- Admin: delete ticket bottom-right -->
+      <!-- -------------------------------- -->
+      <!-- Admin: delete ticket button -->
+      <!-- -------------------------------- -->
       <div *ngIf="role === 'Admin'" class="mt-4 flex justify-end">
         <button
           (click)="deleteTicket(ticket)"

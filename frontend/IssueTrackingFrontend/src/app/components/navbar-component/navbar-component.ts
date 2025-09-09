@@ -26,6 +26,19 @@ export class NavbarComponent {
     return this.user()?.role ?? null;
   }
 
+  get initials(): string {
+    const name = this.user()?.name ?? '';
+    return this.computeInitials(name);
+  }
+
+  private computeInitials(name: string): string {
+    const trimmed = name.trim();
+    if (!trimmed) return 'U';
+    const parts = trimmed.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
   isUser() {
     return this.role === 'User';
   }

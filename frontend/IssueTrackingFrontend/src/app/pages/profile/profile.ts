@@ -175,4 +175,21 @@ export class Profile implements OnInit {
       input.type = input.type === 'password' ? 'text' : 'password';
     }
   }
+
+  get initials(): string {
+    const name = this.user()?.name || this.profileData.name || '';
+    return this.computeInitials(name);
+  }
+
+  private computeInitials(name: string): string {
+    const trimmed = name.trim();
+    if (!trimmed) return 'UU';
+    const parts = trimmed.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) {
+      const first = parts[0].charAt(0) || '';
+      const second = parts[0].charAt(1) || first;
+      return (first + second).toUpperCase();
+    }
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
 }
