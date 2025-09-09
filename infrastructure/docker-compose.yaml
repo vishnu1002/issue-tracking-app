@@ -11,7 +11,7 @@ services:
     networks:
       - appnet
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
 
   backend:
     build:
@@ -22,6 +22,7 @@ services:
       - "8080:8080"
     environment:
       - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sql;Database=IssueTrackingDb;User Id=sa;Password=Your_strong_password123!;TrustServerCertificate=True;Encrypt=False;
       - Jwt__Key=dev-placeholder-change
       - AllowedHosts=*
