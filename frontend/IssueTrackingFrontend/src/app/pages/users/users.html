@@ -28,7 +28,7 @@
 
   <!-- Search and Filter Section -->
   <div class="bg-gray-800 p-2 rounded-xl shadow">
-    <div class="flex flex-wrap gap-3 items-end">
+    <div class="flex flex-wrap gap-3 items-end justify-center">
       <div class="flex-1 min-w-48 relative">
         <svg
           class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
@@ -171,14 +171,20 @@
                 {{ ticketCounts[user.id] || 0 }}
               </span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-6 py-4 whitespace-nowrap relative">
               <span
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full cursor-pointer select-none"
                 [ngClass]="{
                   'bg-green-100 text-green-800': user.role === 'User',
                   'bg-blue-100 text-blue-800': user.role === 'Rep',
                   'bg-purple-100 text-purple-800': user.role === 'Admin'
                 }"
+                (click)="
+                  (user.role === 'User' || user.role === 'Rep') && toggleRolePopover(user.id)
+                "
+                title="Click to change role"
+                aria-haspopup="true"
+                [attr.aria-expanded]="rolePopoverForId === user.id"
               >
                 <svg
                   *ngIf="user.role === 'User'"
@@ -230,6 +236,64 @@
 
                 {{ user.role }}
               </span>
+
+              <!-- Popover: for User show Rep option; for Rep show User option -->
+              <div
+                *ngIf="
+                  (user.role === 'User' || user.role === 'Rep') && rolePopoverForId === user.id
+                "
+                class="absolute left-full top-1/2 transform -translate-y-1/2 -ml-15 z-20"
+                (click)="$event.stopPropagation()"
+              >
+                <div class="relative">
+                  <ng-container [ngSwitch]="user.role">
+                    <button
+                      *ngSwitchCase="'User'"
+                      (click)="confirmPromote(user)"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-300 shadow cursor-pointer"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="size-4"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      Rep
+                    </button>
+                    <button
+                      *ngSwitchCase="'Rep'"
+                      (click)="confirmDemote(user)"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 border border-green-300 shadow cursor-pointer"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        class="size-4"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                        />
+                      </svg>
+                      User
+                    </button>
+                  </ng-container>
+
+                  <div
+                    class="absolute right-full top-1/2 transform -translate-y-1/2 h-0 w-0 border-y-4 border-y-transparent border-r-4 border-r-gray-300"
+                  ></div>
+                </div>
+              </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
               <div class="flex flex-col">
@@ -266,6 +330,9 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Click-outside overlay to close popover -->
+    <div *ngIf="rolePopoverForId" class="fixed inset-0 z-10" (click)="closeRolePopover()"></div>
 
     <!-- Empty State -->
     <div *ngIf="filteredUsers.length === 0" class="text-center py-8">

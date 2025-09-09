@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 
@@ -12,14 +13,23 @@ import { ToastService } from '../../../core/services/toast.service';
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
-export class Register {
+export class Register implements OnInit {
   userData = { name: '', email: '', password: '' };
   confirmPassword = '';
   loading = false;
   error: string | null = null;
   success: string | null = null;
 
-  constructor(private auth: AuthService, private router: Router, private toast: ToastService) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private toast: ToastService,
+    private title: Title
+  ) {}
+
+  ngOnInit() {
+    this.title.setTitle('Issue Tracker - Register');
+  }
 
   isFormValid(): boolean {
     return (

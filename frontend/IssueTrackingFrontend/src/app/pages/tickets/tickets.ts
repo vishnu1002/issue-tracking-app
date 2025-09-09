@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 import { TicketService } from '../../core/services/ticket.service';
 import { TicketModel } from '../../models/ticket.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -29,10 +30,12 @@ export class Tickets implements OnInit {
     private ticketService: TicketService,
     private auth: AuthService,
     private toast: ToastService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private title: Title
   ) {}
 
   ngOnInit() {
+    this.title.setTitle('Issue Tracker - Tickets');
     this.role = this.auth.getRole();
     this.loadTickets();
     // Show toast when redirected after creating a ticket (via query param or navigation state)
@@ -103,6 +106,17 @@ export class Tickets implements OnInit {
 
   updateStatus(ticket: TicketModel, status: TicketModel['status']) {
     if (this.role !== 'Rep') return;
+
+    // Check if trying to change from Closed to In Progress
+    if (
+      (ticket.status === 'CLOSED' || ticket.status === 'Closed') &&
+      (status === 'IN_PROGRESS' || status === 'In Progress')
+    ) {
+      const confirmed = confirm('Do you want to reopen the ticket?');
+      if (!confirmed) {
+        return; // Keep it closed
+      }
+    }
 
     const payload = {
       id: ticket.id,

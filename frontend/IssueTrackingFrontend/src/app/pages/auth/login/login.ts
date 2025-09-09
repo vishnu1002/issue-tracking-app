@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 
@@ -11,7 +12,7 @@ import { ToastService } from '../../../core/services/toast.service';
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './login.html',
 })
-export class Login {
+export class Login implements OnInit {
   credentials = { email: '', password: '' };
   loading = false;
   error: string | null = null;
@@ -21,10 +22,12 @@ export class Login {
     private auth: AuthService,
     private router: Router,
     private route: ActivatedRoute,
-    private toast: ToastService
+    private toast: ToastService,
+    private title: Title
   ) {}
 
   ngOnInit() {
+    this.title.setTitle('Issue Tracker - Login');
     this.redirectUrl = this.route.snapshot.queryParamMap.get('redirect');
   }
 
