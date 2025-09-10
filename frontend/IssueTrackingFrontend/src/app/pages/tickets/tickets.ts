@@ -25,6 +25,7 @@ export class Tickets implements OnInit {
   statusFilter = '';
   priorityFilter = '';
   typeFilter = '';
+  // Admin-only: filter by Rep email via searchTerm as well
 
   constructor(
     private ticketService: TicketService,
@@ -83,7 +84,8 @@ export class Tickets implements OnInit {
         String(ticket.id) === q.replace(/^#/, '') ||
         ticket.title.toLowerCase().includes(q) ||
         ticket.description.toLowerCase().includes(q) ||
-        (this.role === 'Admin' && (ticket.createdByUserEmail || '').toLowerCase().includes(q));
+        (this.role === 'Admin' && (ticket.createdByUserEmail || '').toLowerCase().includes(q)) ||
+        (this.role === 'Admin' && (ticket.assignedToUserEmail || '').toLowerCase().includes(q));
 
       const statusVal = this.getStatusDisplay(ticket.status).toLowerCase();
       const filterVal = (this.statusFilter || '').toLowerCase().replace('_', ' ');
@@ -94,6 +96,54 @@ export class Tickets implements OnInit {
 
       return matchesSearch && matchesStatus && matchesPriority && matchesType;
     });
+  }
+
+  // Admin: compute time taken text for closed tickets
+  getClosedTimeTaken(ticket: TicketModel): string | null {
+    const status = (ticket.status || '').toLowerCase();
+    if (status !== 'closed') return null;
+    // Prefer computing from createdAt -> resolvedAt/updatedAt
+    const startMs = new Date(ticket.createdAt).getTime();
+    const endMs = new Date(ticket.resolvedAt || ticket.updatedAt).getTime();
+    if (isFinite(startMs) && isFinite(endMs) && endMs >= startMs) {
+      const diffMs = endMs - startMs;
+      const totalHours = diffMs / 3600000;
+      if (totalHours < 1) {
+        const minutes = Math.round(diffMs / 60000);
+        return `Time taken: ${minutes} minutes`;
+      }
+      const hoursRounded = Math.round(totalHours);
+      return `Time taken: ${hoursRounded} hours`;
+    }
+    // Fallback: parse resolutionTime when timestamps are not usable
+    if (ticket.resolutionTime) {
+      const span = ticket.resolutionTime.trim();
+      let days = 0,
+        hours = 0,
+        minutes = 0,
+        seconds = 0;
+      if (span.includes('.')) {
+        const [d, rest] = span.split('.');
+        days = parseInt(d, 10) || 0;
+        const parts = rest.split(':');
+        hours = parseInt(parts[0], 10) || 0;
+        minutes = parseInt(parts[1], 10) || 0;
+        seconds = parseInt(parts[2] || '0', 10) || 0;
+      } else {
+        const parts = span.split(':');
+        hours = parseInt(parts[0], 10) || 0;
+        minutes = parseInt(parts[1], 10) || 0;
+        seconds = parseInt(parts[2] || '0', 10) || 0;
+      }
+      const totalHours = days * 24 + hours + minutes / 60 + seconds / 3600;
+      if (totalHours < 1) {
+        const totalMinutes = Math.round(totalHours * 60);
+        return `Time taken: ${totalMinutes} minutes`;
+      }
+      const hoursRounded = Math.round(totalHours);
+      return `Time taken: ${hoursRounded} hours`;
+    }
+    return null;
   }
 
   clearFilters() {

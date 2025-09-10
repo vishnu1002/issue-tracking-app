@@ -248,7 +248,22 @@ public class TicketController : ControllerBase
         existing.Priority = string.IsNullOrWhiteSpace(dto.Priority) ? existing.Priority : dto.Priority;
         existing.Type = string.IsNullOrWhiteSpace(dto.Type) ? existing.Type : dto.Type;
         existing.Status = string.IsNullOrWhiteSpace(dto.Status) ? existing.Status : dto.Status;
-        existing.AssignedToUserId = dto.AssignedToUserId;
+        // Auto-assign on first Rep touch so other reps won't see this ticket anymore
+        if (currentRole == Roles.Rep)
+        {
+            if (existing.AssignedToUserId == null)
+            {
+                existing.AssignedToUserId = currentUserId;
+            }
+            else
+            {
+                existing.AssignedToUserId = dto.AssignedToUserId;
+            }
+        }
+        else
+        {
+            existing.AssignedToUserId = dto.AssignedToUserId;
+        }
         existing.Comment = dto.Comment;
         existing.ResolutionNotes = dto.ResolutionNotes;
 
@@ -310,6 +325,12 @@ public class TicketController : ControllerBase
         // Role restrictions - Reps can comment on tickets assigned to them OR unassigned tickets
         if (currentRole == "Rep" && existing.AssignedToUserId != null && existing.AssignedToUserId != currentUserId)
             return StatusCode(403, new { message = "You can only comment on tickets assigned to you or unassigned tickets" });
+
+        // Auto-assign on first Rep touch via comment as well
+        if (currentRole == Roles.Rep && existing.AssignedToUserId == null)
+        {
+            existing.AssignedToUserId = currentUserId;
+        }
 
         existing.Comment = request.Comment;
         existing.UpdatedAt = IssueTrackingAPI.Context.TimeHelper.NowIst();

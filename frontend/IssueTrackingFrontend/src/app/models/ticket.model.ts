@@ -12,6 +12,9 @@ export interface TicketModel {
   comment?: string;
   createdAt: string;
   updatedAt: string;
+  resolvedAt?: string;
+  resolutionTime?: string; // TimeSpan serialized as string (e.g., HH:mm:ss)
+  resolutionNotes?: string;
   attachments?: Array<{
     id: number;
     fileName: string;

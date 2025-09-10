@@ -28,10 +28,10 @@
 
   <!-- Search and Filter Section -->
   <div class="bg-gray-800 p-2 rounded-xl shadow">
-    <div class="flex flex-wrap gap-3 items-end justify-center">
+    <div class="flex flex-wrap gap-2 items-end justify-center">
       <div class="flex-1 min-w-48 relative">
         <svg
-          class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+          class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -49,15 +49,31 @@
           [(ngModel)]="searchTerm"
           (input)="applyFilters()"
           placeholder="Search users..."
-          class="w-full pl-9 pr-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+          class="w-full pl-8 pr-7 py-1.5 text-sm border border-gray-600 rounded-md bg-gray-700 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
         />
+        <button
+          *ngIf="searchTerm"
+          (click)="searchTerm = ''; applyFilters()"
+          class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-600/60 text-gray-300"
+          title="Clear"
+          aria-label="Clear search"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
       </div>
 
       <div class="min-w-32">
         <select
           [(ngModel)]="roleFilter"
           (change)="applyFilters()"
-          class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+          class="w-full px-3 py-1.5 text-sm border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
         >
           <option value="">All Roles</option>
           <option value="User">User</option>
@@ -68,7 +84,7 @@
 
       <button
         (click)="clearFilters()"
-        class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-600 hover:bg-gray-500 rounded-md transition-colors cursor-pointer"
+        class="px-3 py-1.5 text-xs font-medium text-gray-300 bg-gray-600 hover:bg-gray-500 rounded-md transition-colors cursor-pointer"
       >
         Clear Filters
       </button>
@@ -298,11 +314,11 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
               <div class="flex flex-col">
                 <span>{{ user.createdAt | date : 'dd/MM/yyyy' }}</span>
-                <span class="text-gray-400 text-xs">{{ user.createdAt | date : 'HH:mm' }}</span>
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
               <button
+                *ngIf="user.role !== 'Admin'"
                 (click)="deleteUser(user)"
                 class="group inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-rose-100 bg-rose-900/40 hover:bg-rose-900/60 border border-rose-800/60 rounded-md transition-all cursor-pointer shadow-sm ring-1 ring-rose-500/20 hover:ring-rose-400/30 hover:shadow-rose-900/20"
                 title="Delete user"
