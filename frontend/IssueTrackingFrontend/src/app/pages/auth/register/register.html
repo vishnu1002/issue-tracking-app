@@ -112,6 +112,7 @@
               name="password"
               required
               minlength="6"
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$"
               #passwordInput="ngModel"
               class="mt-1 appearance-none relative z-0 block w-full pl-9 pr-12 py-2 border border-gray-600 placeholder-gray-400 text-white bg-gray-700 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
               placeholder="Enter your password"
@@ -150,6 +151,10 @@
             <div *ngIf="passwordInput.errors?.['minlength']">
               Password must be at least 6 characters
             </div>
+            <div *ngIf="passwordInput.errors?.['pattern']">
+              Password must contain at least 1 uppercase letter, 1 number, and 1 special character
+              (@$!%*?&)
+            </div>
           </div>
         </div>
 
@@ -180,6 +185,8 @@
               [(ngModel)]="confirmPassword"
               name="confirmPassword"
               required
+              minlength="6"
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$"
               #confirmPasswordInput="ngModel"
               class="mt-1 appearance-none relative z-0 block w-full pl-9 pr-12 py-2 border border-gray-600 placeholder-gray-400 text-white bg-gray-700 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
               placeholder="Confirm your password"
@@ -216,6 +223,13 @@
           >
             <div *ngIf="confirmPasswordInput.errors?.['required']">
               Please confirm your password
+            </div>
+            <div *ngIf="confirmPasswordInput.errors?.['minlength']">
+              Password must be at least 6 characters
+            </div>
+            <div *ngIf="confirmPasswordInput.errors?.['pattern']">
+              Password must contain at least 1 uppercase letter, 1 number, and 1 special character
+              (@$!%*?&)
             </div>
           </div>
           <div
