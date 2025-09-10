@@ -154,7 +154,7 @@ export class Tickets implements OnInit {
     this.applyFilters();
   }
 
-  updateStatus(ticket: TicketModel, status: TicketModel['status']) {
+  async updateStatus(ticket: TicketModel, status: TicketModel['status']) {
     if (this.role !== 'Rep') return;
 
     // Check if trying to change from Closed to In Progress
@@ -162,7 +162,11 @@ export class Tickets implements OnInit {
       (ticket.status === 'CLOSED' || ticket.status === 'Closed') &&
       (status === 'IN_PROGRESS' || status === 'In Progress')
     ) {
-      const confirmed = confirm('Do you want to reopen the ticket?');
+      const confirmed = await this.toast.confirm('Do you want to reopen the ticket?', {
+        title: 'Reopen Ticket',
+        yesLabel: 'Reopen',
+        noLabel: 'Cancel',
+      });
       if (!confirmed) {
         return; // Keep it closed
       }
@@ -213,7 +217,7 @@ export class Tickets implements OnInit {
       },
       error: (err) => {
         console.error('Failed to save comment:', err);
-        alert('Failed to save comment. Please try again.');
+        this.toast.error('Failed to save comment. Please try again.');
       },
     });
   }
@@ -234,14 +238,14 @@ export class Tickets implements OnInit {
     }
   }
 
-  deleteTicket(ticket: TicketModel) {
+  async deleteTicket(ticket: TicketModel) {
     if (this.role !== 'Admin') return;
 
-    if (
-      confirm(
-        `Are you sure you want to delete the ticket "${ticket.title}"? This action cannot be undone.`
-      )
-    ) {
+    const ok = await this.toast.confirm(
+      `Are you sure you want to delete the ticket "${ticket.title}"? This action cannot be undone.`,
+      { title: 'Delete Ticket', yesLabel: 'Delete', noLabel: 'Cancel' }
+    );
+    if (ok) {
       this.ticketService.deleteTicket(ticket.id).subscribe({
         next: () => {
           // Remove ticket from the list

@@ -101,9 +101,13 @@ export class Users implements OnInit {
     this.rolePopoverForId = null;
   }
 
-  confirmPromote(user: UserModel) {
+  async confirmPromote(user: UserModel) {
     this.closeRolePopover();
-    const ok = confirm('Make this user a Representative?');
+    const ok = await this.toast.confirm('Make this user a Representative?', {
+      title: 'Promote to Representative',
+      yesLabel: 'Promote',
+      noLabel: 'Cancel',
+    });
     if (ok) {
       this.promoteToRep(user);
     }
@@ -128,17 +132,24 @@ export class Users implements OnInit {
       });
   }
 
-  confirmDemote(user: UserModel) {
+  async confirmDemote(user: UserModel) {
     this.closeRolePopover();
-    const ok = confirm('Switch this Representative back to User?');
+    const ok = await this.toast.confirm('Switch this Representative back to User?', {
+      title: 'Change Role',
+      yesLabel: 'Switch to User',
+      noLabel: 'Cancel',
+    });
     if (ok) {
       this.demoteToUser(user);
     }
   }
 
-  promoteToRep(user: UserModel) {
+  async promoteToRep(user: UserModel) {
     if (!user || user.role === 'Rep') return;
-    const confirmed = confirm(`Make "${user.name || user.email}" a Representative?`);
+    const confirmed = await this.toast.confirm(
+      `Make "${user.name || user.email}" a Representative?`,
+      { title: 'Promote', yesLabel: 'Promote', noLabel: 'Cancel' }
+    );
     if (!confirmed) return;
 
     this.userService
@@ -159,10 +170,12 @@ export class Users implements OnInit {
       });
   }
 
-  deleteUser(user: UserModel) {
-    if (
-      confirm(`Are you sure you want to delete user "${user.name}"? This action cannot be undone.`)
-    ) {
+  async deleteUser(user: UserModel) {
+    const ok = await this.toast.confirm(
+      `Are you sure you want to delete user "${user.name}"? This action cannot be undone.`,
+      { title: 'Delete User', yesLabel: 'Delete', noLabel: 'Cancel' }
+    );
+    if (ok) {
       this.userService.deleteUser(user.id.toString()).subscribe({
         next: () => {
           // Remove user from the list

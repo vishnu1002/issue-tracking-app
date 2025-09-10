@@ -1,70 +1,97 @@
-<div class="fixed inset-x-0 top-5 z-50 flex justify-center pointer-events-none">
-  <div class="space-y-2">
+<div class="fixed inset-x-0 top-4 z-[1000] flex justify-center pointer-events-none">
+  <div class="space-y-3 w-full max-w-sm px-3 sm:px-0">
     <div
       *ngFor="let t of toasts"
-      class="pointer-events-auto flex items-center gap-4 w-full max-w-md p-4 px-5 rounded-lg shadow-sm ring-1 backdrop-blur-sm animate-toast-in"
+      class="pointer-events-auto flex items-start gap-4 w-full p-5 rounded-xl shadow-xl ring-1 animate-toast-in"
       [ngClass]="{
-        'text-emerald-200 bg-emerald-900/40 ring-emerald-800/40': t.type === 'success',
-        'text-red-200 bg-red-900/40 ring-red-800/40': t.type === 'error',
-        'text-indigo-200 bg-indigo-900/40 ring-indigo-800/40': t.type === 'info'
+        'bg-emerald-400 border border-emerald-200 text-emerald-800 ring-emerald-200/50 dark:bg-emerald-900/20 dark:border-emerald-700/30 dark:text-emerald-200':
+          t.type === 'success',
+        'bg-red-400 border border-red-200 text-red-800 ring-red-200/50 dark:bg-red-900/20 dark:border-red-700/30 dark:text-red-200':
+          t.type === 'error',
+        'bg-blue-400 border border-blue-200 text-blue-800 ring-blue-200/50 dark:bg-blue-900/20 dark:border-blue-700/30 dark:text-blue-200':
+          t.type === 'info'
       }"
       role="alert"
     >
       <div
-        class="inline-flex items-center justify-center shrink-0 w-8 h-8 rounded-lg ring-1"
+        class="inline-flex items-center justify-center shrink-0 w-10 h-10 rounded-xl shadow-md ring-2"
         [ngClass]="{
-          'text-emerald-300 bg-emerald-900/60 ring-emerald-800/40': t.type === 'success',
-          'text-red-300 bg-red-900/60 ring-red-800/40': t.type === 'error',
-          'text-indigo-300 bg-indigo-900/60 ring-indigo-800/40': t.type === 'info'
+          'text-emerald-600 bg-white ring-emerald-200 dark:bg-emerald-900/30 dark:ring-emerald-700':
+            t.type === 'success',
+          'text-red-600 bg-white ring-red-200 dark:bg-red-900/30 dark:ring-red-700':
+            t.type === 'error',
+          'text-blue-600 bg-white ring-blue-200 dark:bg-blue-900/30 dark:ring-blue-700':
+            t.type === 'info'
         }"
       >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             *ngIf="t.type === 'success'"
             stroke-linecap="round"
             stroke-linejoin="round"
-            stroke-width="2"
+            stroke-width="2.5"
             d="M5 13l4 4L19 7"
           />
           <path
             *ngIf="t.type === 'error'"
             stroke-linecap="round"
             stroke-linejoin="round"
-            stroke-width="2"
+            stroke-width="2.5"
             d="M12 9v3m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           />
           <path
             *ngIf="t.type === 'info'"
             stroke-linecap="round"
             stroke-linejoin="round"
-            stroke-width="2"
+            stroke-width="2.5"
             d="M13 16h-1v-4h-1m1-4h.01M12 18a6 6 0 110-12 6 6 0 010 12z"
           />
         </svg>
         <span class="sr-only">Toast icon</span>
       </div>
-      <div class="ms-3 flex-1 text-sm font-normal">{{ t.message }}</div>
+      <div class="flex-1 text-sm font-medium">
+        <span
+          *ngIf="t.title"
+          class="mb-2 block text-base font-bold"
+          [ngClass]="{
+            'text-emerald-900 dark:text-emerald-100': t.type === 'success',
+            'text-red-900 dark:text-red-100': t.type === 'error',
+            'text-blue-900 dark:text-blue-100': t.type === 'info'
+          }"
+          >{{ t.title }}</span
+        >
+        <div class="mb-3 leading-relaxed">{{ t.message }}</div>
+        <div *ngIf="t.actions?.length" class="flex gap-2">
+          <button
+            *ngFor="let a of t.actions"
+            (click)="a.onClick && a.onClick(); dismiss(t.id)"
+            class="inline-flex justify-center px-3 py-2 text-sm font-semibold rounded-lg transition-colors duration-200 focus:ring-4 focus:outline-none shadow-md hover:shadow-lg"
+            [ngClass]="{
+              'text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 focus:ring-emerald-300 dark:focus:ring-emerald-800':
+                a.variant === 'primary' || !a.variant,
+              'text-gray-700 bg-white/80 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 focus:ring-gray-200 dark:text-gray-200 dark:bg-gray-700/50 dark:border-gray-600 dark:hover:bg-gray-600/50 dark:hover:border-gray-500 dark:focus:ring-gray-700':
+                a.variant === 'secondary',
+              'text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 focus:ring-red-300 dark:focus:ring-red-800':
+                a.variant === 'danger'
+            }"
+          >
+            {{ a.label }}
+          </button>
+        </div>
+      </div>
       <button
         type="button"
-        class="-mx-1.5 -my-1.5 rounded-lg focus:ring-2 p-1 inline-flex items-center justify-center h-7 w-7"
-        [ngClass]="{
-          'text-emerald-300 hover:text-emerald-100 focus:ring-emerald-700/40 hover:bg-emerald-900/50':
-            t.type === 'success',
-          'text-red-300 hover:text-red-100 focus:ring-red-700/40 hover:bg-red-900/50':
-            t.type === 'error',
-          'text-indigo-300 hover:text-indigo-100 focus:ring-indigo-700/40 hover:bg-indigo-900/50':
-            t.type === 'info'
-        }"
+        class="flex items-center justify-center shrink-0 w-8 h-8 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-white/50 dark:hover:text-gray-300 dark:hover:bg-gray-700/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
         (click)="dismiss(t.id)"
         aria-label="Close"
       >
         <span class="sr-only">Close</span>
-        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 14 14">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+            d="M6 18L18 6M6 6l12 12"
           />
         </svg>
       </button>

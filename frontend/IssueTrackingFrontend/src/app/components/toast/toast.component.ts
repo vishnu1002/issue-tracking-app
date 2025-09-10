@@ -18,8 +18,16 @@ export class ToastContainerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.sub = this.toast.toasts$.subscribe((t) => {
-      this.toasts.push(t);
-      timer(t.durationMs).subscribe(() => this.dismiss(t.id));
+      // Replace any existing toast; only one visible at a time
+      this.toasts = [t];
+      if (t.durationMs && t.durationMs > 0) {
+        timer(t.durationMs).subscribe(() => {
+          // Only dismiss if this toast is still the visible one
+          if (this.toasts.length && this.toasts[0].id === t.id) {
+            this.dismiss(t.id);
+          }
+        });
+      }
     });
   }
 
