@@ -22,8 +22,10 @@ export interface TicketTrend {
 export interface RepresentativePerformance {
   representativeId: number;
   representativeName: string;
+  representativeEmail: string;
   ticketsAssigned: number;
   ticketsResolved: number;
+  ticketsClosed: number;
   resolutionRate: number;
   averageResolutionTime: number;
 }

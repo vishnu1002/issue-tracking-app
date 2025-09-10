@@ -66,6 +66,7 @@ public class TicketController : ControllerBase
             CreatedByUserId = t.CreatedByUserId,
             CreatedByUserEmail = t.CreatedByUser?.Email,
             AssignedToUserId = t.AssignedToUserId,
+            AssignedToUserEmail = t.AssignedToUser?.Email,
             Comment = t.Comment,
             CreatedAt = t.CreatedAt,
             UpdatedAt = t.UpdatedAt,
@@ -162,6 +163,7 @@ public class TicketController : ControllerBase
             CreatedByUserId = ticket.CreatedByUserId,
             CreatedByUserEmail = ticket.CreatedByUser?.Email,
             AssignedToUserId = ticket.AssignedToUserId,
+            AssignedToUserEmail = ticket.AssignedToUser?.Email,
             Comment = ticket.Comment,
             CreatedAt = ticket.CreatedAt,
             UpdatedAt = ticket.UpdatedAt
@@ -265,6 +267,7 @@ public class TicketController : ControllerBase
                 CreatedByUserId = updatedTicket.CreatedByUserId,
                 CreatedByUserEmail = updatedTicket.CreatedByUser?.Email,
                 AssignedToUserId = updatedTicket.AssignedToUserId,
+                AssignedToUserEmail = updatedTicket.AssignedToUser?.Email,
                 Comment = updatedTicket.Comment,
                 CreatedAt = updatedTicket.CreatedAt,
                 UpdatedAt = updatedTicket.UpdatedAt
@@ -325,6 +328,7 @@ public class TicketController : ControllerBase
             Status = updatedTicket.Status,
             CreatedByUserId = updatedTicket.CreatedByUserId,
             AssignedToUserId = updatedTicket.AssignedToUserId,
+            AssignedToUserEmail = updatedTicket.AssignedToUser?.Email,
             Comment = updatedTicket.Comment,
             CreatedAt = updatedTicket.CreatedAt,
             UpdatedAt = updatedTicket.UpdatedAt

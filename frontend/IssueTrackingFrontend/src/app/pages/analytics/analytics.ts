@@ -60,7 +60,7 @@ export class Analytics implements OnInit {
     });
 
     // Load representatives KPI
-    this.kpiService.getAllRepresentativesKPI(filters).subscribe({
+    this.kpiService.getAllRepresentativesKPI().subscribe({
       next: (kpis) => {
         this.representativesKPI = kpis;
       },

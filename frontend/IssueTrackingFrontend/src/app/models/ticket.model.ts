@@ -8,6 +8,7 @@ export interface TicketModel {
   createdByUserId: number;
   createdByUserEmail?: string;
   assignedToUserId?: number;
+  assignedToUserEmail?: string;
   comment?: string;
   createdAt: string;
   updatedAt: string;

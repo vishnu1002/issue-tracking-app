@@ -27,8 +27,10 @@ public class RepresentativePerformance_DTO
 {
     public int RepresentativeId { get; set; }
     public string RepresentativeName { get; set; } = string.Empty;
+    public string RepresentativeEmail { get; set; } = string.Empty;
     public int TicketsAssigned { get; set; }
     public int TicketsResolved { get; set; }
+    public int TicketsClosed { get; set; }
     public double ResolutionRate { get; set; }
     public double AverageResolutionTime { get; set; }
 }

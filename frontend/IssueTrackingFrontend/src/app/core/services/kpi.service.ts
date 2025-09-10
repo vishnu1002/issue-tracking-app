@@ -48,18 +48,9 @@ export class KPIService {
     return this.http.get(`${env.apiUrl}/dashboard/performance`, { params });
   }
 
-  // Get all representatives KPI (Admin only)
-  getAllRepresentativesKPI(filters?: KPIFilters): Observable<RepresentativePerformance[]> {
-    let params = new HttpParams();
-    if (filters?.fromDate) {
-      params = params.set('fromDate', filters.fromDate);
-    }
-    if (filters?.toDate) {
-      params = params.set('toDate', filters.toDate);
-    }
-    return this.http.get<RepresentativePerformance[]>(`${this.baseUrl}/representatives`, {
-      params,
-    });
+  // Get all representatives KPI (Admin only) - no date filtering
+  getAllRepresentativesKPI(): Observable<RepresentativePerformance[]> {
+    return this.http.get<RepresentativePerformance[]>(`${this.baseUrl}/representatives`);
   }
 
   // Get specific representative KPI

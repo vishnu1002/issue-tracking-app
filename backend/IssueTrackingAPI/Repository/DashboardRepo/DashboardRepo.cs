@@ -71,10 +71,12 @@ public class DashboardRepo : IDashboardRepo
             var created = await _context.Tickets_Table
                 .CountAsync(t => t.CreatedAt >= date && t.CreatedAt < nextDate);
                 
+            // Treat "resolved" as tickets marked Solved/Resolved (status variations allowed)
             var resolved = await _context.Tickets_Table
-                .CountAsync(t => t.Status == "Closed" && 
-                               t.UpdatedAt >= date.Date && 
-                               t.UpdatedAt < nextDate.Date);
+                .CountAsync(t => t.Status != null &&
+                                   (t.Status.ToLower().Replace(" ", "") == "solved" || t.Status.ToLower().Replace(" ", "") == "resolved") &&
+                                   t.UpdatedAt >= date.Date &&
+                                   t.UpdatedAt < nextDate.Date);
             
             trends.Add(new TicketTrend_DTO
             {
@@ -149,7 +151,8 @@ public class DashboardRepo : IDashboardRepo
     // Get Tickets Count By Status
     public async Task<int> GetTicketsCountByStatusAsync(string status, DateTime? fromDate = null, DateTime? toDate = null)
     {
-        var query = _context.Tickets_Table.Where(t => t.Status == status);
+        var normalized = status.ToLower().Replace(" ", "");
+        var query = _context.Tickets_Table.Where(t => t.Status != null && t.Status.ToLower().Replace(" ", "") == normalized);
         
         if (fromDate.HasValue)
             query = query.Where(t => t.CreatedAt >= fromDate.Value);
@@ -163,7 +166,8 @@ public class DashboardRepo : IDashboardRepo
     // Get Tickets Count By Status (overload without date filtering)
     public async Task<int> GetTicketsCountByStatusAsync(string status)
     {
-        return await _context.Tickets_Table.CountAsync(t => t.Status == status);
+        var normalized = status.ToLower().Replace(" ", "");
+        return await _context.Tickets_Table.CountAsync(t => t.Status != null && t.Status.ToLower().Replace(" ", "") == normalized);
     }
 
     // Get Tickets Count By Priority
@@ -208,7 +212,7 @@ public class DashboardRepo : IDashboardRepo
     // Get Average Resolution Time
     public async Task<double> GetAverageResolutionTimeAsync(DateTime? fromDate = null, DateTime? toDate = null)
     {
-        var query = _context.Tickets_Table.Where(t => t.Status == "Closed");
+        var query = _context.Tickets_Table.Where(t => t.Status != null && t.Status.ToLower().Replace(" ", "") == "closed");
         
         if (fromDate.HasValue)
             query = query.Where(t => t.CreatedAt >= fromDate.Value.Date);

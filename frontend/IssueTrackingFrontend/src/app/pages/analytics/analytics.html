@@ -343,6 +343,11 @@
               <th
                 class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
               >
+                ID
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+              >
                 Representative
               </th>
               <th
@@ -358,6 +363,11 @@
               <th
                 class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
               >
+                Tickets Closed
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+              >
                 Resolution Rate
               </th>
               <th
@@ -369,6 +379,9 @@
           </thead>
           <tbody class="bg-gray-800 divide-y divide-gray-700">
             <tr *ngFor="let rep of representativesKPI" class="hover:bg-gray-700/60">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                <div class="font-semibold">{{ rep.representativeId }}</div>
+              </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 h-10 w-10">
@@ -384,7 +397,8 @@
                     <div class="text-sm font-medium text-gray-100">
                       {{ rep.representativeName }}
                     </div>
-                    <div class="text-sm text-gray-400">ID: {{ rep.representativeId }}</div>
+                    <!-- <div class="text-sm text-gray-400">ID: {{ rep.representativeId }}</div> -->
+                    <div class="text-gray-400 text-xs break-all">{{ rep.representativeEmail }}</div>
                   </div>
                 </div>
               </td>
@@ -393,6 +407,9 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
                 {{ rep.ticketsResolved }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                {{ rep.ticketsClosed }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span

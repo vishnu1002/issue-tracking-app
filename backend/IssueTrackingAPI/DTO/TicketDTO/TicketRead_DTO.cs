@@ -11,6 +11,7 @@ public class TicketRead_DTO
     public int CreatedByUserId { get; set; }
     public string? CreatedByUserEmail { get; set; }
     public int? AssignedToUserId { get; set; }
+    public string? AssignedToUserEmail { get; set; }
     public string? Comment { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
