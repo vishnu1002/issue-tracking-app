@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using IssueTrackingAPI.DTO.TicketDTO;
 using IssueTrackingAPI.Model;
 using IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
-// using IssueTrackingAPI.Services;
+using IssueTrackingAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -17,11 +17,13 @@ namespace IssueTrackingAPI.Controllers;
 public class TicketController : ControllerBase
 {
     private readonly ITicketRepo _ticketRepo;
+    private readonly IEmailService _emailService;
     private readonly string _attachmentsRoot = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "attachments");
 
-    public TicketController(ITicketRepo ticketRepo)
+    public TicketController(ITicketRepo ticketRepo, IEmailService emailService)
     {
         _ticketRepo = ticketRepo;
+        _emailService = emailService;
         if (!Directory.Exists(_attachmentsRoot)) Directory.CreateDirectory(_attachmentsRoot);
     }
 
@@ -269,7 +271,47 @@ public class TicketController : ControllerBase
 
         try
         {
+            // Store the previous status to check if ticket was just closed
+            var previousStatus = existing.Status;
+            
             var updatedTicket = await _ticketRepo.UpdateTicket(existing);
+
+            // Check if ticket was just closed by a Rep and send email notification
+            if (currentRole == Roles.Rep && 
+                string.Equals(updatedTicket.Status, "Closed", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(previousStatus, "Closed", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    // Get the ticket creator and assigned rep details for email
+                    var ticketWithUsers = await _ticketRepo.GetTicketByIdWithUsers(updatedTicket.Id);
+                    if (ticketWithUsers?.CreatedByUser != null && ticketWithUsers.AssignedToUser != null)
+                    {
+                        // Send email notification asynchronously (fire and forget)
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await _emailService.SendTicketClosedNotificationAsync(
+                                    ticketWithUsers, 
+                                    ticketWithUsers.CreatedByUser, 
+                                    ticketWithUsers.AssignedToUser);
+                            }
+                            catch (Exception ex)
+                            {
+                                // Log the error but don't fail the ticket update
+                                // You might want to add proper logging here
+                                Console.WriteLine($"Failed to send email notification: {ex.Message}");
+                            }
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the error but don't fail the ticket update
+                    Console.WriteLine($"Failed to send email notification: {ex.Message}");
+                }
+            }
 
             return Ok(new TicketRead_DTO
             {

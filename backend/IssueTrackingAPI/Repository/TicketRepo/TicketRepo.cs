@@ -30,6 +30,14 @@ public class TicketRepo : ITicketRepo
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    public async Task<TicketModel?> GetTicketByIdWithUsers(int id)
+    {
+        return await _context.Tickets_Table
+            .Include(t => t.CreatedByUser)
+            .Include(t => t.AssignedToUser)
+            .FirstOrDefaultAsync(t => t.Id == id);
+    }
+
     public async Task<TicketModel> AddTicket(TicketModel ticket)
     {
         _context.Tickets_Table.Add(ticket);

@@ -4,6 +4,8 @@ using IssueTrackingAPI.Repository.TicketRepo.TicketRepo;
 using IssueTrackingAPI.Repository.UserRepo.UserRepo;
 using IssueTrackingAPI.Repository.DashboardRepo.DashboardRepo;
 using IssueTrackingAPI.Repository.KPIRepo.KPIRepo;
+using IssueTrackingAPI.Services;
+using IssueTrackingAPI.Model;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -40,6 +42,10 @@ builder.Services.AddScoped<ITicketRepo, TicketRepo>();
 // Notifications removed
 builder.Services.AddScoped<IDashboardRepo, DashboardRepo>();
 builder.Services.AddScoped<IKPIRepo, KPIRepo>();
+
+// Service to: Email Configuration and Service
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // SignalR notifications removed
 
